@@ -69,7 +69,7 @@ glm::vec3 getBarycentric(const Vertex& A, const Vertex& B, const Vertex& C, cons
 }
 
 /*
-* 计算视口矩阵
+* 计算窗口矩阵
 * glm使用行矩阵, 存储时需要转置
 * Vp = [ w/2,  0 ,  0 , w/2+x,
 *		  0 , h/2,  0 , h/2+y,
@@ -84,6 +84,64 @@ glm::mat4 getViewPortMatrix(int x, int y, int width, int height) {
 	result[3][1] = height / 2.0f + y;
 	return result;
 }
+
+/*
+* 计算摄像机矩阵
+* glm使用行矩阵, 存储时需要转置
+*/
+glm::mat4 getViewMatrix(const glm::vec3& pos, const glm::vec3 front, const glm::vec3 right, const glm::vec3 up) {
+	glm::mat4 result = glm::mat4(1.0f);
+	result[0][0] = right.x;
+	result[1][0] = right.y;
+	result[2][0] = right.z;
+	result[3][0] = -glm::dot(right, pos);
+	result[0][1] = up.x;
+	result[1][1] = up.y;
+	result[2][1] = up.z;
+	result[3][1] = -glm::dot(up, pos);
+	result[0][2] = -front.x;
+	result[1][2] = -front.y;
+	result[2][2] = -front.z;
+	result[3][2] = glm::dot(front, pos);
+	return result;
+}
+
+/*
+* 计算投影透视矩阵
+* glm使用行矩阵, 存储时需要转置
+*/
+glm::mat4 getPerspectiveMatrix(const float& fovy, const float& aspect, const float& n, const float& f) {
+	glm::mat4 result = glm::mat4(0.0f);
+	float tanHalfFov = tan(fovy * 0.5f);
+	result[0][0] = 1.0f / (aspect * tanHalfFov);
+	result[1][1] = 1.0f / (tanHalfFov);
+	result[2][2] = -(f + n) / (f - n);
+	result[2][3] = -1.0f;
+	result[3][2] = (-2.0f * n * f) / (f - n);
+	return result;
+}
+
+/*
+* 透视除法
+* 将齐次坐标转换为三维坐标
+*/
+void perspectiveDivision(Vertex& v) {
+	v.windowPos /= v.windowPos.w;
+	v.windowPos.w = 1.0f;
+	v.windowPos.z = (v.windowPos.z + 1.0) * 0.5;
+}
+
+/*
+* 背面剔除
+*/
+bool backFaceCutting(const Vertex& A, const Vertex& B, const Vertex& C) {
+	glm::vec3 AB = glm::vec3(B.windowPos.x - A.windowPos.x, B.windowPos.y - A.windowPos.y, B.windowPos.z - A.windowPos.z);
+	glm::vec3 AC = glm::vec3(C.windowPos.x - A.windowPos.x, C.windowPos.y - A.windowPos.y, C.windowPos.z - A.windowPos.z);
+	glm::vec3 normal = glm::cross(AB, AC); // 面的法向量
+	glm::vec3 view = glm::vec3(0, 0, 1);
+	return glm::dot(normal, view) > 0;
+}
+
 
 /*
 * 工具函数

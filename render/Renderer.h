@@ -11,16 +11,23 @@
 #include "Math.h"
 #include "Mesh.h"
 
-class Pipline {
+enum class RenderMode {
+	LINE, MESH
+};
+
+class Renderer {
 private:
 	int width;
 	int height;
 	FrameBuffer* frameBuffer;
 	Shader* shader;
+	glm::mat4 viewPortMatrix;
+	RenderMode mode;
 
 public:
-	Pipline(const int& w, const int& h) : width(w), height(h), frameBuffer(nullptr), shader(nullptr) { }
-	~Pipline();
+	Renderer(const int& w, const int& h, RenderMode m = RenderMode::MESH)
+		: width(w), height(h), frameBuffer(nullptr), shader(nullptr), mode(m) { }
+	~Renderer();
 
 	void init();
 	void display();
@@ -32,13 +39,14 @@ public:
 	void setViewMatrix(const glm::mat4& m);
 	void setProjectMatrix(const glm::mat4& m);
 
+	void drawLine(const Vertex& v1, const Vertex& v2);
 	void scanLineFilling(const Vertex& left, const Vertex& right);
 	void drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3);
 	void drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3);
 	void drawMesh(const Mesh& mesh);
 };
 
-Pipline::~Pipline() {
+Renderer::~Renderer() {
 	if (frameBuffer) {
 		delete frameBuffer;
 	}
@@ -49,44 +57,42 @@ Pipline::~Pipline() {
 	shader = nullptr;
 }
 
-void Pipline::init() {
+void Renderer::init() {
 	if (frameBuffer) {
 		delete frameBuffer;
 	}
 	if (shader) {
 		delete shader;
 	}
-	glm::mat4 viewPortMatrix = getViewPortMatrix(0, 0, width, height);
+	viewPortMatrix = getViewPortMatrix(0, 0, width, height);
 	shader = new Shader;
-	shader->setViewPortMatrix(viewPortMatrix);
 	frameBuffer = new FrameBuffer(width, height);
 }
 
-void Pipline::display() {
+void Renderer::display() {
 	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer->colorBuffer.data());
 }
 
-void Pipline::resize(const int& w, const int& h) {
+void Renderer::resize(const int& w, const int& h) {
 	width = w;
 	height = h;
 	frameBuffer->resize(w, h);
-	glm::mat4 viewPortMatrix = getViewPortMatrix(0, 0, w, h);
-	shader->setViewPortMatrix(viewPortMatrix);
+	viewPortMatrix = getViewPortMatrix(0, 0, w, h);
 }
 
-void Pipline::fillColorBuffer(const glm::vec4& color) {
+void Renderer::fillColorBuffer(const glm::vec4& color) {
 	frameBuffer->fillColorBuffer(color);
 }
 
-void Pipline::setModelMatrix(const glm::mat4& m) {
+void Renderer::setModelMatrix(const glm::mat4& m) {
 	shader->setModelMatrix(m);
 }
 
-void Pipline::setViewMatrix(const glm::mat4& m) {
+void Renderer::setViewMatrix(const glm::mat4& m) {
 	shader->setViewMatrix(m);
 }
 
-void Pipline::setProjectMatrix(const glm::mat4& m) {
+void Renderer::setProjectMatrix(const glm::mat4& m) {
 	shader->setProjectMatrix(m);
 }
 
@@ -95,7 +101,7 @@ void Pipline::setProjectMatrix(const glm::mat4& m) {
 * 使用重心坐标系, 遍历三角形包围盒填充
 * 此算法易于插值, 但运行速度过慢, 不再使用
 */
-void Pipline::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
+void Renderer::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
 
 	// 计算包围盒
 	glm::vec2 min, max;
@@ -124,7 +130,7 @@ void Pipline::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, cons
 * 光栅化三角形
 * 使用普通平面坐标系, 将三角形拆分成上下两部分分别使用扫描线算法进行填充与插值
 */
-void Pipline::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
+void Renderer::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3) {
 
 	// 将v1,v2,v3按照纵坐标由小到大排序
 	Vertex arr[3] = { v1, v2, v3 };
@@ -136,9 +142,9 @@ void Pipline::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 	int minY = arr[0].windowPos.y, midY = arr[1].windowPos.y, maxY = arr[2].windowPos.y;
 	int bottomHeight = midY - minY, upperHeight = maxY - midY, totalHeight = maxY - minY;
 
-	bool flag = arr[1].windowPos.x < arr[2].windowPos.x;
-	Vertex leftPoint = flag ? arr[1] : Lerp(arr[0], arr[2], float(bottomHeight) / totalHeight);
-	Vertex rightPoint = flag ? Lerp(arr[0], arr[2], float(bottomHeight) / totalHeight) : arr[1];
+	Vertex leftPoint = Lerp(arr[0], arr[2], float(bottomHeight) / totalHeight);
+	Vertex rightPoint = arr[1];
+	if (leftPoint.windowPos.x > rightPoint.windowPos.x) std::swap(leftPoint, rightPoint);
 	Vertex leftpos, rightpos;
 	float weight;
 
@@ -163,23 +169,36 @@ void Pipline::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
 * 扫描线填充
 * 填充并插值从left到right的所有点
 */
-void Pipline::scanLineFilling(const Vertex& left, const Vertex& right) {
+void Renderer::scanLineFilling(const Vertex& left, const Vertex& right) {
 	
 	if (left.windowPos.x == right.windowPos.x) {
 		frameBuffer->drawPixel(left.windowPos.x, left.windowPos.y, shader->fragmentShader(left));
 		return;
 	}
-	int xmin = left.windowPos.x + 0.5, xmax = right.windowPos.x + 0.5; // 四舍五入
+
+	int xmin = left.windowPos.x, xmax = right.windowPos.x; // 
 	int lenght = xmax - xmin;
-	int y = left.windowPos.y + 0.5;
+	int y = left.windowPos.y;
 	Vertex v;
+	float depth;
+
 	for (int x = xmin; x <= xmax; x++) {
 		v = Lerp(left, right, float(x - xmin) / lenght);
+
+		depth = frameBuffer->getDepth(x, y);
 		frameBuffer->drawPixel(x, y, shader->fragmentShader(v));
+		if (v.windowPos.z < depth) { // 深度测试
+			frameBuffer->drawPixel(x, y, shader->fragmentShader(v));
+			frameBuffer->setDepth(x, y, v.windowPos.z);
+		}
 	}
 }
 
-void Pipline::drawMesh(const Mesh& mesh) {
+/*
+* 绘制Mesh
+* 一个Mesh由多个三角面构成
+*/
+void Renderer::drawMesh(const Mesh& mesh) {
 	int size = mesh.EBO.size();
 	if (size == 0) {
 		return;
@@ -187,15 +206,71 @@ void Pipline::drawMesh(const Mesh& mesh) {
 	RawVertex A, B, C;
 	Vertex v1, v2, v3;
 	for (int i = 0; i < size; i += 3) {
-		A = mesh.VBO[mesh.EBO[i]];
-		B = mesh.VBO[mesh.EBO[i + 1]];
-		C = mesh.VBO[mesh.EBO[i + 2]];
+		A = *(mesh.VBO.data() + *(mesh.EBO.data() + i));
+		B = *(mesh.VBO.data() + *(mesh.EBO.data() + i + 1));
+		C = *(mesh.VBO.data() + *(mesh.EBO.data() + i + 2));
 
+		// 顶点着色器
 		v1 = shader->vertexShader(A);
 		v2 = shader->vertexShader(B);
 		v3 = shader->vertexShader(C);
 
-		drawTriangle(v1, v2, v3);
+		// 透视除法
+		perspectiveDivision(v1);
+		perspectiveDivision(v2);
+		perspectiveDivision(v3);
+
+		if (!backFaceCutting(v1, v2, v3)) continue;
+
+		v1.windowPos = viewPortMatrix * v1.windowPos;
+		v2.windowPos = viewPortMatrix * v2.windowPos;
+		v3.windowPos = viewPortMatrix * v3.windowPos;
+
+		if (mode == RenderMode::MESH) {
+			drawTriangle(v1, v2, v3);
+		}
+		else if (mode == RenderMode::LINE) {
+			drawLine(v1, v2);
+			drawLine(v2, v3);
+			drawLine(v1, v3);
+		}
+	}
+}
+
+/*
+* Bresenham画线算法
+*/
+void Renderer::drawLine(const Vertex& v1, const Vertex& v2) {
+	int x0 = v1.windowPos.x, x1 = v2.windowPos.x;
+	int y0 = v1.windowPos.y, y1 = v2.windowPos.y;
+	bool steep = false; // 是否交换x,y轴
+	if (std::abs(x0 - x1) < std::abs(y0 - y1)) { // 如果斜率大于1, 则交换x,y轴
+		std::swap(x0, y0);
+		std::swap(x1, y1);
+		steep = true;
+	}
+	if (x0 > x1) {
+		std::swap(x0, x1);
+		std::swap(y0, y1);
+	}
+	int dx = x1 - x0;
+	int dy = y1 - y0;
+	int derror2 = std::abs(dy) * 2;
+	int error2 = 0;
+	int y = y0;
+	int x;
+	for (x = x0; x <= x1; x++) {
+		if (steep) {
+			frameBuffer->drawPixel(y, x, glm::vec4(0, 0, 0, 255));
+		}
+		else {
+			frameBuffer->drawPixel(x, y, glm::vec4(0, 0, 0, 255));
+		}
+		error2 += derror2;
+		if (error2 > dx) {
+			y += y1 > y0 ? 1 : -1;
+			error2 -= dx * 2;
+		}
 	}
 }
 

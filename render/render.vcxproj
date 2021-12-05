@@ -151,12 +151,13 @@
     <ClCompile Include="tgaimage.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Window.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Pipline.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="test.h" />
     <ClInclude Include="tgaimage.h" />
-    <ClInclude Include="V2F.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -43,8 +43,9 @@ void Mesh::addMesh(const Mesh& mesh) {
 	int offset = VBO.size();
 	VBO.insert(VBO.end(), mesh.VBO.begin(), mesh.VBO.end()); // 加入mesh中所有VBO
 	EBO.reserve(EBO.size() + mesh.EBO.size()); // 增加EBO vector预留空间
+	const unsigned int* p = mesh.EBO.data();
 	for (int i = 0; i < mesh.EBO.size(); i++) { // 加入mesh中所有EBO
-		EBO.push_back(offset + mesh.EBO[i]);
+		EBO.push_back(offset + *(p + i));
 	}
 }
 

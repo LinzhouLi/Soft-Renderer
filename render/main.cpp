@@ -1,9 +1,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <Windows.h>
 #include <thread>
-#include "Pipline.h"
+#include "Renderer.h"
+#include "test.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -14,9 +16,11 @@ const unsigned int SCR_HEIGHT = 600;
 
 int fps = 0;
 
+Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
+
 void ShowFps(GLFWwindow* window) {
     while (1) {
-        Sleep(1000);
+        Sleep(1500);
         std::string text = "MyRender fps:" + std::to_string(fps);
         glfwSetWindowTitle(window, text.c_str());
         fps = 0;
@@ -50,18 +54,18 @@ int main()
         return -1;
     }
 
-    // Window
-    Pipline pip(SCR_WIDTH, SCR_HEIGHT);
-    pip.init();
+    // Renderer
+    renderer.init();
+    
+    Mesh box = createBox(glm::vec3(0.0f, 0.0f, 0.0f), 0.5);
 
-    RawVertex v1(glm::vec4(-0.5, -0.8, 0, 1), glm::vec4(255, 0, 0, 0));
-    RawVertex v2(glm::vec4(0.8, -0.1, 0, 1), glm::vec4(0, 255, 0, 0));
-    RawVertex v3(glm::vec4(0, 0.8, 0, 1), glm::vec4(0, 0, 255, 0));
-
-    glm::vec4 black(0, 0, 0, 0);
+    renderer.setViewMatrix(getViewMatrix(glm::vec3(0, 0, 5), glm::vec3(0, 0, -1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0)));
+    renderer.setProjectMatrix(getPerspectiveMatrix(glm::radians(60.0f), float(SCR_WIDTH) / SCR_HEIGHT, 0.3f, 100.0f));
 
     std::thread t(ShowFps, window);
     t.detach();
+
+    float angle = 0.0f;
 
     // render loop
     // -----------
@@ -70,9 +74,13 @@ int main()
         // input
         // -----
         processInput(window);
+        renderer.fillColorBuffer(glm::vec4(30, 80, 90, 255));
 
-        pip.fillColorBuffer(glm::vec4(30, 80, 90, 255));
-
+        renderer.setModelMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(1.0f, -1.0f, 0.0f)));
+        renderer.drawMesh(box);
+        
+        renderer.display();
+        angle += 1.0f;
         fps++;
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -101,5 +109,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
+    renderer.resize(width, height);
     glViewport(0, 0, width, height);
 }
