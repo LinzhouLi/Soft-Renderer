@@ -1,82 +1,95 @@
-#ifndef __WINDOW_H__
-#define __WINDOW_H__
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <vector>
-#include <iostream>
-#include "Vertex.h"
-#include "FrameBuffer.h"
-#include "Shader.h"
-#include "Math.h"
-#include "Mesh.h"
 #include "Scene.h"
+
+#include "Math.h"
+#include "Shader.h"
+#include "Mesh.h"
 #include "Object.h"
+#include "Light.h"
+#include "Camera.h"
+#include "FrameBuffer.h"
+#include "Material.h"
 
-enum class RenderMode {
-	LINE, MESH
-};
-
-class Renderer {
-private:
-	int width;
-	int height;
-	FrameBuffer* frameBuffer;
-	glm::mat4 viewPortMatrix;
-	RenderMode mode;
-
-public:
-	Renderer(const int& w, const int& h, RenderMode m = RenderMode::MESH)
-		: width(w), height(h), frameBuffer(nullptr), mode(m) { }
-	~Renderer();
-
-	void init();
-	void display();
-
-	void resize(const int& w, const int& h);
-	void fillColorBuffer(const glm::vec4& color);
-
-	void render(Scene& scene);
-	void writeVertex(Vertex& v, Shader* shader);
-	void drawLine(const Vertex& v1, const Vertex& v2);
-	void scanLineFilling(const Vertex& left, const Vertex& right, Shader* shader);
-	void drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader);
-	void drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader);
-	void drawMesh(const Mesh* mesh, Shader* shader);
-	void drawObject(const Object* obj);
-};
-
-Renderer::~Renderer() {
-	if (frameBuffer) {
-		delete frameBuffer;
-	}
+Scene::Scene(const int& w, const int& h, RenderMode m) {
+	width = w;
+	height = h;
+	mode = m;
 	frameBuffer = nullptr;
 }
 
-void Renderer::init() {
+Scene::~Scene() {
 	if (frameBuffer) {
 		delete frameBuffer;
 	}
-	viewPortMatrix = getViewPortMatrix(0, 0, width, height);
+	lights.clear();
+	std::vector <Light*>().swap(lights); // 清空内存
+	objects.clear();
+	std::vector <Object*>().swap(objects); // 清空内存
+	frameBuffer = nullptr;
+}
+
+void Scene::init() {
+	camera = nullptr;
+	currentMaterial = nullptr;
+	glm::vec4 backgroundColor = glm::vec4(0, 0, 0, 255);
+
+	lights.clear();
+	std::vector <Light*>().swap(lights); // 清空内存
+	objects.clear();
+	std::vector <Object*>().swap(objects); // 清空内存
+
+	if (frameBuffer) {
+		delete frameBuffer;
+	}
 	frameBuffer = new FrameBuffer(width, height);
+
+	viewPortMatrix = getViewPortMatrix(0, 0, width, height);
+	viewMatrix = glm::mat4(1.0f);
+	projectMatrix = glm::mat4(1.0f);
 }
 
-void Renderer::display() {
-	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer->colorBuffer.data());
+void Scene::add(Camera* cam) {
+	if (camera) {
+		delete camera;
+	}
+	camera = cam;
+	camera->updateAspact(width, height);
+	viewMatrix = camera->viewMatrix();
+	projectMatrix = camera->perspectiveMatrix();
 }
 
-void Renderer::resize(const int& w, const int& h) {
+void Scene::add(Light* light) {
+	lights.push_back(light);
+}
+
+void Scene::add(Object* object) {
+	objects.push_back(object);
+	object->material->shader->setScene(this);
+}
+
+void Scene::setBackgroundColor(const glm::vec4& color) {
+	backgroundColor = color;
+}
+
+void Scene::resize(const int& w, const int& h) {
 	width = w;
 	height = h;
 	frameBuffer->resize(w, h);
 	viewPortMatrix = getViewPortMatrix(0, 0, w, h);
+
+	camera->updateAspact(width, height);
+	viewMatrix = camera->viewMatrix();
+	projectMatrix = camera->perspectiveMatrix();
 }
 
-void Renderer::fillColorBuffer(const glm::vec4& color) {
+void Scene::fillColorBuffer(const glm::vec4& color) {
 	frameBuffer->fillColorBuffer(color);
 }
 
-void Renderer::writeVertex(Vertex& v, Shader* shader) {
+void Scene::display() {
+	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer->colorBuffer.data());
+}
+
+void Scene::writeVertex(Vertex& v, Shader* shader) {
 	v.color /= v.z;
 	v.normal /= v.z;
 	v.texCoord /= v.z;
@@ -90,7 +103,7 @@ void Renderer::writeVertex(Vertex& v, Shader* shader) {
 * 使用重心坐标系, 遍历三角形包围盒填充
 * 此算法易于插值, 但运行速度过慢, 不再使用
 */
-void Renderer::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
+void Scene::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
 
 	// 计算包围盒
 	glm::vec2 min, max;
@@ -119,7 +132,7 @@ void Renderer::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, con
 * 光栅化三角形
 * 使用普通平面坐标系, 将三角形拆分成上下两部分分别使用扫描线算法进行填充与插值
 */
-void Renderer::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
+void Scene::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
 
 	// 将v1,v2,v3按照纵坐标由小到大排序
 	Vertex arr[3] = { v1, v2, v3 };
@@ -158,8 +171,8 @@ void Renderer::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3
 * 扫描线填充
 * 填充并插值从left到right的所有点
 */
-void Renderer::scanLineFilling(const Vertex& left, const Vertex& right, Shader* shader) {
-	
+void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* shader) {
+
 	if (left.windowPos.x == right.windowPos.x) {
 		frameBuffer->drawPixel(left.windowPos.x, left.windowPos.y, shader->fragmentShader(left));
 		return;
@@ -176,7 +189,13 @@ void Renderer::scanLineFilling(const Vertex& left, const Vertex& right, Shader* 
 
 		depth = frameBuffer->getDepth(x, y);
 		if (v.windowPos.z < depth) { // 深度测试
-			writeVertex(v, shader);
+			v.color /= v.z;
+			v.normal /= v.z;
+			v.texCoord /= v.z;
+			v.worldPos /= v.z;
+
+			frameBuffer->drawPixel(x, y, shader->fragmentShader(v));
+			frameBuffer->setDepth(x, y, v.windowPos.z);
 		}
 	}
 }
@@ -185,7 +204,7 @@ void Renderer::scanLineFilling(const Vertex& left, const Vertex& right, Shader* 
 * 绘制Mesh
 * 一个Mesh由多个三角面构成
 */
-void Renderer::drawMesh(const Mesh* mesh, Shader* shader) {
+void Scene::drawMesh(const Mesh* mesh, Shader* shader) {
 	int size = mesh->EBO.size();
 	if (size == 0) {
 		return;
@@ -228,7 +247,7 @@ void Renderer::drawMesh(const Mesh* mesh, Shader* shader) {
 /*
 * Bresenham画线算法
 */
-void Renderer::drawLine(const Vertex& v1, const Vertex& v2) {
+void Scene::drawLine(const Vertex& v1, const Vertex& v2) {
 	int x0 = v1.windowPos.x, x1 = v2.windowPos.x;
 	int y0 = v1.windowPos.y, y1 = v2.windowPos.y;
 	bool steep = false; // 是否交换x,y轴
@@ -262,21 +281,18 @@ void Renderer::drawLine(const Vertex& v1, const Vertex& v2) {
 	}
 }
 
-void Renderer::drawObject(const Object* obj) {
+void Scene::drawObject(const Object* obj) {
 	if (obj->mesh->EBO.empty()) {
 		return;
 	}
 	drawMesh(obj->mesh, obj->material->shader);
 }
 
-void Renderer::render(Scene& scene) {
-	fillColorBuffer(scene.backgroundColor);
-	for (auto object : scene.objects) {
-		scene.currentMaterial = object->material;
+void Scene::render() {
+	fillColorBuffer(backgroundColor);
+	for (auto object : objects) {
+		currentMaterial = object->material;
 		drawObject(object);
 	}
 	display();
 }
-
-#endif // !__WINDOW_H__
-

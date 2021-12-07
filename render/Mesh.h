@@ -1,8 +1,51 @@
 #ifndef __MESH_H__
 #define __MESH_H__
 
+#include <glm/glm.hpp>
 #include <vector>
-#include "Vertex.h"
+
+class RawVertex { // 顶点
+public:
+	glm::vec4 position;
+	glm::vec4 color;
+	glm::vec2 texCorrd;
+	glm::vec3 normal;
+
+	RawVertex() = default;
+	~RawVertex() = default;
+
+	RawVertex(
+		const glm::vec4& _pos,
+		const glm::vec4& _color = glm::vec4(0, 0, 0, 0),
+		const glm::vec2& _tex = glm::vec2(0, 0),
+		const glm::vec3& _normal = glm::vec3(0, 0, 1)
+	) : position(_pos), color(_color), texCorrd(_tex), normal(_normal) { }
+};
+
+class Vertex {
+public:
+	glm::vec4 worldPos;
+	glm::vec4 windowPos;
+	glm::vec4 color;
+	glm::vec2 texCoord;
+	glm::vec3 normal;
+	float z;
+
+	Vertex() = default;
+	~Vertex() = default;
+
+	Vertex(
+		const glm::vec4& _worldPos,
+		const glm::vec4& _windowPos,
+		const glm::vec4& _color,
+		const glm::vec2& _texCoord,
+		const glm::vec3& _normal,
+		const float& _z
+	) : worldPos(_worldPos), windowPos(_windowPos), color(_color), texCoord(_texCoord), normal(_normal), z(_z) { }
+
+	Vertex(const Vertex& v) : worldPos(v.worldPos), windowPos(v.windowPos), color(v.color), texCoord(v.texCoord), normal(v.normal), z(v.z) { }
+
+};
 
 class Mesh {
 public:
@@ -19,45 +62,6 @@ public:
 	void addMesh(const Mesh& mesh);
 	void addTriangle(const RawVertex& v1, const RawVertex& v2, const RawVertex& v3);
 };
-
-Mesh::Mesh(const int& vNum, const int iNum) {
-	VBO.resize(vNum);
-	EBO.resize(iNum);
-}
-
-Mesh& Mesh::operator=(const Mesh& mesh) {
-	if (&mesh != this) {
-		return *this;
-	}
-	VBO = mesh.VBO;
-	EBO = mesh.EBO;
-	return *this;
-}
-
-Mesh& Mesh::operator+=(const Mesh& mesh) {
-	addMesh(mesh);
-	return *this;
-}
-
-void Mesh::addMesh(const Mesh& mesh) {
-	int offset = VBO.size();
-	VBO.insert(VBO.end(), mesh.VBO.begin(), mesh.VBO.end()); // 加入mesh中所有VBO
-	EBO.reserve(EBO.size() + mesh.EBO.size()); // 增加EBO vector预留空间
-	const unsigned int* p = mesh.EBO.data();
-	for (int i = 0; i < mesh.EBO.size(); i++) { // 加入mesh中所有EBO
-		EBO.push_back(offset + *(p + i));
-	}
-}
-
-void Mesh::addTriangle(const RawVertex& v1, const RawVertex& v2, const RawVertex& v3) {
-	int offset = VBO.size();
-	VBO.push_back(v1);
-	VBO.push_back(v2);
-	VBO.push_back(v3);
-	EBO.push_back(offset);
-	EBO.push_back(offset + 1);
-	EBO.push_back(offset + 2);
-}
 
 #endif // !__MESH_H__
 

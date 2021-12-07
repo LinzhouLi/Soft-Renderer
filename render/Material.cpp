@@ -1,0 +1,26 @@
+#include "Material.h"
+
+#include "Texture.h"
+#include "Shader.h"
+
+Material::Material(Shader* sha, Texture* tex) {
+	color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	gloss = 32;
+	texture = tex;
+	shader = sha;
+}
+
+Material::Material(const glm::vec4& _color, const glm::vec4& _specular, const int& _gloss)
+	: color(_color), specular(_specular), gloss(_gloss) {
+	texture = nullptr;
+	shader = nullptr;
+}
+
+void Material::setShader(Shader* sha) {
+	shader = sha;
+}
+
+void Material::setTexture(Texture* tex) {
+	texture = tex;
+}

@@ -4,8 +4,13 @@
 #include <iostream>
 #include <Windows.h>
 #include <thread>
-#include "Renderer.h"
+
 #include "test.h"
+#include "Scene.h"
+#include "Material.h"
+#include "Object.h"
+#include "Shader.h"
+#include "Camera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -16,7 +21,7 @@ const unsigned int SCR_HEIGHT = 600;
 
 int fps = 0;
 
-Renderer renderer(SCR_WIDTH, SCR_HEIGHT);
+Scene scene(SCR_WIDTH, SCR_HEIGHT);
 
 void ShowFps(GLFWwindow* window) {
     while (1) {
@@ -55,12 +60,17 @@ int main()
     }
 
     // Renderer
-    renderer.init();
-    
-    Mesh box = createBox(glm::vec3(0.0f, 0.0f, 0.0f), 0.5);
+    scene.init();
+    scene.setBackgroundColor(glm::vec4(30, 80, 90, 255));
 
-    renderer.setViewMatrix(getViewMatrix(glm::vec3(0, 0, 5), glm::vec3(0, 0, -1), glm::vec3(1, 0, 0), glm::vec3(0, 1, 0)));
-    renderer.setProjectMatrix(getPerspectiveMatrix(glm::radians(60.0f), float(SCR_WIDTH) / SCR_HEIGHT, 0.3f, 100.0f));
+    Camera camera(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 0.3f, 100.0f);
+    scene.add(&camera);
+
+    Mesh box = createBox(glm::vec3(0.0f, 0.0f, 0.0f), 0.5);
+    Shader shader;
+    Material material(&shader);
+    Object obj(&box, &material);
+    scene.add(&obj);
 
     std::thread t(ShowFps, window);
     t.detach();
@@ -74,12 +84,10 @@ int main()
         // input
         // -----
         processInput(window);
-        renderer.fillColorBuffer(glm::vec4(30, 80, 90, 255));
-
-        renderer.setModelMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(1.0f, -1.0f, 0.0f)));
-        renderer.drawMesh(box);
         
-        renderer.display();
+        obj.transform(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(1.0, 1.0, 0.0)));
+        scene.render();
+
         angle += 1.0f;
         fps++;
 
@@ -109,6 +117,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
-    renderer.resize(width, height);
+    scene.resize(width, height);
     glViewport(0, 0, width, height);
 }
