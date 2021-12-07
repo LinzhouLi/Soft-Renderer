@@ -31,6 +31,7 @@ void Scene::init() {
 	camera = nullptr;
 	currentMaterial = nullptr;
 	glm::vec4 backgroundColor = glm::vec4(0, 0, 0, 255);
+	viewFrustumPlanes.resize(6, glm::vec4(0.0f));
 
 	lights.clear();
 	std::vector <Light*>().swap(lights); // 清空内存
@@ -52,9 +53,11 @@ void Scene::add(Camera* cam) {
 		delete camera;
 	}
 	camera = cam;
-	camera->updateAspact(width, height);
-	viewMatrix = camera->viewMatrix();
-	projectMatrix = camera->perspectiveMatrix();
+	updateCamera();
+	glm::vec4 temp = projectMatrix * viewMatrix * viewFrustumPlanes[4];
+	nearZ = (temp.z / temp.w + 1.0) * 0.5;
+	temp = projectMatrix * viewMatrix * viewFrustumPlanes[5];
+	farZ = (temp.z / temp.w + 1.0) * 0.5;
 }
 
 void Scene::add(Light* light) {
@@ -64,6 +67,13 @@ void Scene::add(Light* light) {
 void Scene::add(Object* object) {
 	objects.push_back(object);
 	object->material->shader->setScene(this);
+}
+
+void Scene::updateCamera() {
+	camera->updateAspact(width, height);
+	viewMatrix = camera->viewMatrix(); // 更新观察空间矩阵
+	projectMatrix = camera->perspectiveMatrix(); // 更新投影矩阵
+	updateViewFrustumPlanes(viewFrustumPlanes, projectMatrix * viewMatrix); // 更新视锥平面
 }
 
 void Scene::setBackgroundColor(const glm::vec4& color) {
@@ -76,9 +86,7 @@ void Scene::resize(const int& w, const int& h) {
 	frameBuffer->resize(w, h);
 	viewPortMatrix = getViewPortMatrix(0, 0, w, h);
 
-	camera->updateAspact(width, height);
-	viewMatrix = camera->viewMatrix();
-	projectMatrix = camera->perspectiveMatrix();
+	updateCamera();
 }
 
 void Scene::fillColorBuffer(const glm::vec4& color) {
@@ -90,10 +98,6 @@ void Scene::display() {
 }
 
 void Scene::writeVertex(Vertex& v, Shader* shader) {
-	v.color /= v.z;
-	v.normal /= v.z;
-	v.texCoord /= v.z;
-	v.worldPos /= v.z;
 	frameBuffer->drawPixel(v.windowPos.x, v.windowPos.y, shader->fragmentShader(v));
 	frameBuffer->setDepth(v.windowPos.x, v.windowPos.y, v.windowPos.z);
 }
@@ -189,11 +193,8 @@ void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* sha
 
 		depth = frameBuffer->getDepth(x, y);
 		if (v.windowPos.z < depth) { // 深度测试
-			v.color /= v.z;
-			v.normal /= v.z;
-			v.texCoord /= v.z;
-			v.worldPos /= v.z;
 
+			// 片段着色器
 			frameBuffer->drawPixel(x, y, shader->fragmentShader(v));
 			frameBuffer->setDepth(x, y, v.windowPos.z);
 		}
@@ -221,14 +222,18 @@ void Scene::drawMesh(const Mesh* mesh, Shader* shader) {
 		v2 = shader->vertexShader(B);
 		v3 = shader->vertexShader(C);
 
+		// 视锥剔除
+		if (viewFrustumCutting(v1, v2, v3, viewFrustumPlanes)) continue;
+
 		// 透视除法
 		perspectiveDivision(v1);
 		perspectiveDivision(v2);
 		perspectiveDivision(v3);
 
 		// 背面剔除
-		if (!backFaceCutting(v1, v2, v3)) continue;
+		if (backFaceCutting(v1, v2, v3)) continue;
 
+		// NDC坐标转换为窗口屏幕坐标
 		v1.windowPos = viewPortMatrix * v1.windowPos;
 		v2.windowPos = viewPortMatrix * v2.windowPos;
 		v3.windowPos = viewPortMatrix * v3.windowPos;

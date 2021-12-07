@@ -2,33 +2,9 @@
 #define __MATH_H__
 
 #include <glm/glm.hpp>
+#include <vector>
 
 class Vertex;
-
-/*
-* 线性插值
-*/
-glm::vec4 Lerp(const glm::vec4& v1, const glm::vec4& v2, const float& factor);
-
-glm::vec4 Lerp(const glm::vec4& v1, const glm::vec4& v2, const glm::vec4& v3, const glm::vec3& factor);
-
-glm::vec3 Lerp(const glm::vec3& v1, const glm::vec3& v2, const float& factor);
-
-glm::vec3 Lerp(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec3& factor);
-
-glm::vec2 Lerp(const glm::vec2& v1, const glm::vec2& v2, const float& factor);
-
-glm::vec2 Lerp(const glm::vec2& v1, const glm::vec2& v2, const glm::vec2& v3, const glm::vec3& factor);
-
-float Lerp(const float& f1, const float& f2, const float& factor);
-
-float Lerp(const float& f1, const float& f2, const float& f3, const glm::vec3& factor);
-
-// 两个点之间线性插值
-Vertex Lerp(const Vertex& v1, const Vertex& v2, const float& factor);
-
-// 三角形重心坐标系线性插值
-Vertex Lerp(const Vertex& v1, const Vertex& v2, const Vertex& v3, const glm::vec3& factor);
 
 /*
 * 计算三角形重心坐标
@@ -68,6 +44,42 @@ void perspectiveDivision(Vertex& v);
 */
 bool backFaceCutting(const Vertex& A, const Vertex& B, const Vertex& C);
 
+/*
+* 计算视锥平面
+* vp = projectMatrix * viewMatrix
+*/
+void updateViewFrustumPlanes(std::vector<glm::vec4>& planes, const glm::mat4& vp);
+
+/*
+* 视锥去除
+*/
+bool viewFrustumCutting(const Vertex& A, const Vertex& B, const Vertex& C, std::vector<glm::vec4>& planes);
+
+
+/*
+* 线性插值
+*/
+glm::vec4 Lerp(const glm::vec4& v1, const glm::vec4& v2, const float& factor);
+
+glm::vec4 Lerp(const glm::vec4& v1, const glm::vec4& v2, const glm::vec4& v3, const glm::vec3& factor);
+
+glm::vec3 Lerp(const glm::vec3& v1, const glm::vec3& v2, const float& factor);
+
+glm::vec3 Lerp(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec3& factor);
+
+glm::vec2 Lerp(const glm::vec2& v1, const glm::vec2& v2, const float& factor);
+
+glm::vec2 Lerp(const glm::vec2& v1, const glm::vec2& v2, const glm::vec2& v3, const glm::vec3& factor);
+
+float Lerp(const float& f1, const float& f2, const float& factor);
+
+float Lerp(const float& f1, const float& f2, const float& f3, const glm::vec3& factor);
+
+// 两个点之间线性插值
+Vertex Lerp(const Vertex& v1, const Vertex& v2, const float& factor);
+
+// 三角形重心坐标系线性插值
+Vertex Lerp(const Vertex& v1, const Vertex& v2, const Vertex& v3, const glm::vec3& factor);
 
 /*
 * 工具函数
@@ -75,6 +87,14 @@ bool backFaceCutting(const Vertex& A, const Vertex& B, const Vertex& C);
 float triMin(float a, float b, float c);
 
 float triMax(float a, float b, float c);
+
+/*
+* 点到面距离
+* 平面方程 Ax + By + Cz + D = 0
+* distance = Ax + By + Cz + D
+*/
+float distance(const glm::vec3& point, const glm::vec4& plane);
+
 
 #endif // !__MATH_H__
 

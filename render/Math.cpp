@@ -41,12 +41,14 @@ float Lerp(const float& f1, const float& f2, const float& f3, const glm::vec3& f
 // 两个点之间线性插值
 Vertex Lerp(const Vertex& v1, const Vertex& v2, const float& factor) {
 	Vertex result;
-	result.worldPos = Lerp(v1.worldPos, v2.worldPos, factor);
+	float z1 = v1.windowPos.w;
+	float z2 = v2.windowPos.w;
+	float z = Lerp(z1, z2, factor);
+	result.worldPos = Lerp(v1.worldPos / z1, v2.worldPos / z2, factor);
 	result.windowPos = Lerp(v1.windowPos, v2.windowPos, factor);
-	result.color = Lerp(v1.color, v2.color, factor);
-	result.texCoord = Lerp(v1.texCoord, v2.texCoord, factor);
-	result.normal = Lerp(v1.normal, v2.normal, factor);
-	result.z = Lerp(v1.z, v2.z, factor);
+	result.color = Lerp(v1.color / z1, v2.color / z2, factor);
+	result.texCoord = Lerp(v1.texCoord / z1, v2.texCoord / z2, factor);
+	result.normal = Lerp(v1.normal / z1, v2.normal / z2, factor);
 	return result;
 }
 
@@ -58,7 +60,6 @@ Vertex Lerp(const Vertex& v1, const Vertex& v2, const Vertex& v3, const glm::vec
 	result.color = Lerp(v1.color, v2.color, v3.color, factor);
 	result.texCoord = Lerp(v1.texCoord, v2.texCoord, v3.texCoord, factor);
 	result.normal = Lerp(v1.normal, v2.normal, v3.normal, factor);
-	result.z = Lerp(v1.z, v2.z, v3.z, factor);
 	return result;
 }
 
@@ -148,8 +149,70 @@ bool backFaceCutting(const Vertex& A, const Vertex& B, const Vertex& C) {
 	glm::vec3 AC = glm::vec3(C.windowPos.x - A.windowPos.x, C.windowPos.y - A.windowPos.y, C.windowPos.z - A.windowPos.z);
 	glm::vec3 normal = glm::cross(AB, AC); // 面的法向量
 	glm::vec3 view = glm::vec3(0, 0, 1);
-	return glm::dot(normal, view) > 0;
+	return glm::dot(normal, view) < 0;
 }
+
+/*
+* 计算视锥平面
+*/
+void updateViewFrustumPlanes(std::vector<glm::vec4>& planes, const glm::mat4& vp) {
+	glm::vec4* p = planes.data();
+	//左侧  
+	p->x = vp[0][3] + vp[0][0];
+	p->y = vp[1][3] + vp[1][0];
+	p->z = vp[2][3] + vp[2][0];
+	p->w = vp[3][3] + vp[3][0];
+	//右侧
+	(p + 1)->x = vp[0][3] - vp[0][0];
+	(p + 1)->y = vp[1][3] - vp[1][0];
+	(p + 1)->z = vp[2][3] - vp[2][0];
+	(p + 1)->w = vp[3][3] - vp[3][0];
+	//上侧
+	(p + 2)->x = vp[0][3] - vp[0][1];
+	(p + 2)->y = vp[1][3] - vp[1][1];
+	(p + 2)->z = vp[2][3] - vp[2][1];
+	(p + 2)->w = vp[3][3] - vp[3][1];
+	//下侧
+	(p + 3)->x = vp[0][3] + vp[0][1];
+	(p + 3)->y = vp[1][3] + vp[1][1];
+	(p + 3)->z = vp[2][3] + vp[2][1];
+	(p + 3)->w = vp[3][3] + vp[3][1];
+	//Near
+	(p + 4)->x = vp[0][3] + vp[0][2];
+	(p + 4)->y = vp[1][3] + vp[1][2];
+	(p + 4)->z = vp[2][3] + vp[2][2];
+	(p + 4)->w = vp[3][3] + vp[3][2];
+	//Far
+	(p + 5)->x = vp[0][3] - vp[0][2];
+	(p + 5)->y = vp[1][3] - vp[1][2];
+	(p + 5)->z = vp[2][3] - vp[2][2];
+	(p + 5)->w = vp[3][3] - vp[3][2];
+}
+
+/*
+* 视锥去除
+*/
+bool viewFrustumCutting(const Vertex& A, const Vertex& B, const Vertex& C, std::vector<glm::vec4>& planes) {
+	glm::vec3 minPoint, maxPoint;
+	glm::vec4* p = planes.data();
+	minPoint.x = triMin(A.worldPos.x, B.worldPos.x, C.worldPos.x);
+	minPoint.y = triMin(A.worldPos.y, B.worldPos.y, C.worldPos.y);
+	minPoint.z = triMin(A.worldPos.z, B.worldPos.z, C.worldPos.z);
+	maxPoint.x = triMax(A.worldPos.x, B.worldPos.x, C.worldPos.x);
+	maxPoint.y = triMax(A.worldPos.y, B.worldPos.y, C.worldPos.y);
+	maxPoint.z = triMax(A.worldPos.z, B.worldPos.z, C.worldPos.z);
+	
+	// near far
+	if (distance(minPoint, *(p + 4)) < 0 || distance(maxPoint, *(p + 4)) < 0) return true;
+	if (distance(minPoint, *(p + 5)) < 0 || distance(maxPoint, *(p + 5)) < 0) return true;
+
+	// other plans
+	for (int i = 0; i < 4; i++) {
+		if (distance(minPoint, *(p + i)) < 0 || distance(maxPoint, *(p + i)) < 0) return true;
+	}
+	return false;
+}
+
 
 /*
 * 工具函数
@@ -164,4 +227,13 @@ float triMax(float a, float b, float c) {
 	float result = std::max(a, b);
 	result = std::max(result, c);
 	return result;
+}
+
+/*
+* 点到面距离
+* 平面方程 Ax + By + Cz + D = 0
+* distance = Ax + By + Cz + D
+*/
+float distance(const glm::vec3& point, const glm::vec4& plane) {
+	return point.x * plane.x + point.y * plane.y + point.z * plane.z + plane.w;
 }

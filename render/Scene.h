@@ -25,11 +25,15 @@ public:
 	Camera* camera;
 	std::vector<Light*> lights;
 	std::vector<Object*> objects;
+	std::vector<glm::vec4> viewFrustumPlanes;
 	glm::vec4 backgroundColor;
+
+	float nearZ;
+	float farZ;
 
 	Material* currentMaterial;
 
-	glm::mat4 viewMatrix; // 视图矩阵
+	glm::mat4 viewMatrix; // 观察空间矩阵
 	glm::mat4 projectMatrix; // 投影矩阵
 	glm::mat4 viewPortMatrix; // 窗口矩阵
 
@@ -45,6 +49,7 @@ public:
 	void add(Camera* cam);
 	void add(Light* light);
 	void add(Object* object);
+	void updateCamera();
 	void setBackgroundColor(const glm::vec4& color);
 
 	void resize(const int& w, const int& h);

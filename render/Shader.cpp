@@ -17,11 +17,9 @@ Vertex Shader::vertexShader(const RawVertex& v) {
 	Vertex result;
 	result.worldPos = modelMatrix * v.position;
 	result.windowPos = this->scene->projectMatrix * this->scene->viewMatrix * result.worldPos;
-	result.z = 1 / result.windowPos.w;
-	result.worldPos *= result.z;
-	result.color = v.color * result.z;
-	result.normal = v.normal * result.z;
-	result.texCoord = v.texCorrd * result.z;
+	result.color = v.color;
+	result.normal = v.normal;
+	result.texCoord = v.texCorrd;
 	return result;
 }
 

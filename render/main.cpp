@@ -10,6 +10,7 @@
 #include "Material.h"
 #include "Object.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "Camera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -25,7 +26,7 @@ Scene scene(SCR_WIDTH, SCR_HEIGHT);
 
 void ShowFps(GLFWwindow* window) {
     while (1) {
-        Sleep(1500);
+        Sleep(1000);
         std::string text = "MyRender fps:" + std::to_string(fps);
         glfwSetWindowTitle(window, text.c_str());
         fps = 0;
@@ -68,7 +69,8 @@ int main()
 
     Mesh box = createBox(glm::vec3(0.0f, 0.0f, 0.0f), 0.5);
     Shader shader;
-    Material material(&shader);
+    Texture texture("assets/container.jpg");
+    Material material(&shader, &texture);
     Object obj(&box, &material);
     scene.add(&obj);
 
