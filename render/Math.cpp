@@ -213,6 +213,11 @@ bool viewFrustumCutting(const Vertex& A, const Vertex& B, const Vertex& C, std::
 	return false;
 }
 
+// 计算光线反射方向
+glm::vec3 reflect(const glm::vec3& lightDir, const glm::vec3& normal) {
+	return glm::normalize(lightDir - 2 * glm::dot(normal, lightDir) * normal);
+}
+
 
 /*
 * 工具函数

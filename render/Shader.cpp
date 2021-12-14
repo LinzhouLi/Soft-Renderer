@@ -4,6 +4,8 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "Texture.h"
+#include "Light.h"
+#include "Camera.h"
 
 Shader::Shader() {
 	modelMatrix = glm::mat4(1.0f);
@@ -28,7 +30,11 @@ glm::vec4 Shader::fragmentShader(const Vertex& v) {
 		return v.color;
 	}
 	else {
-		return this->scene->currentMaterial->texture->sample2D(v.texCoord);
+		glm::vec3 resultColor = this->scene->currentMaterial->texture->sample2D(v.texCoord);
+		for (auto light : this->scene->lights) {
+			resultColor = light->calculateColor(v.worldPos, this->scene->camera->position, v.normal, resultColor, this->scene->currentMaterial->gloss);
+		}
+		return glm::vec4(resultColor, 1.0f);
 	}
 }
 

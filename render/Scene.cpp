@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "FrameBuffer.h"
 #include "Material.h"
+#include "Light.h"
 
 Scene::Scene(const int& w, const int& h, RenderMode m) {
 	width = w;
@@ -294,6 +295,7 @@ void Scene::drawObject(const Object* obj) {
 }
 
 void Scene::render() {
+	updateCamera();
 	fillColorBuffer(backgroundColor);
 	for (auto object : objects) {
 		currentMaterial = object->material;

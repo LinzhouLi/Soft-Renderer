@@ -81,6 +81,9 @@ Vertex Lerp(const Vertex& v1, const Vertex& v2, const float& factor);
 // 三角形重心坐标系线性插值
 Vertex Lerp(const Vertex& v1, const Vertex& v2, const Vertex& v3, const glm::vec3& factor);
 
+// 计算光线反射方向
+glm::vec3 reflect(const glm::vec3& lightDir, const glm::vec3& normal);
+
 /*
 * 工具函数
 */

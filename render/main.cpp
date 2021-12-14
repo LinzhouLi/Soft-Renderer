@@ -12,6 +12,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Camera.h"
+#include "Light.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -23,6 +24,7 @@ const unsigned int SCR_HEIGHT = 600;
 int fps = 0;
 
 Scene scene(SCR_WIDTH, SCR_HEIGHT);
+Camera camera(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 45.0f,  0.1f, 100.0f);
 
 void ShowFps(GLFWwindow* window) {
     while (1) {
@@ -33,8 +35,10 @@ void ShowFps(GLFWwindow* window) {
     }
 }
 
+#include <math.h>
 int main()
 {
+    
     
     // glfw: initialize and configure
     // ------------------------------
@@ -62,10 +66,12 @@ int main()
 
     // Renderer
     scene.init();
-    scene.setBackgroundColor(glm::vec4(30, 80, 90, 255));
-
-    Camera camera(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 0.3f, 100.0f);
     scene.add(&camera);
+    DirectionLight dirctionLight1 = DirectionLight(glm::vec3(-1, -1, -1), glm::vec3(255, 255, 255));
+    DirectionLight dirctionLight2 = DirectionLight(glm::vec3(1, 1, 1), glm::vec3(255, 255, 255));
+    scene.add(&dirctionLight1);
+    scene.add(&dirctionLight2);
+    scene.setBackgroundColor(glm::vec4(30, 80, 90, 255));
 
     Mesh box = createBox(glm::vec3(0.0f, 0.0f, 0.0f), 0.5);
     Shader shader;
@@ -87,7 +93,7 @@ int main()
         // -----
         processInput(window);
         
-        obj.transform(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(1.0, 1.0, 0.0)));
+        //obj.transform(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(1.0, 1.0, 0.0)));
         scene.render();
 
         angle += 1.0f;
@@ -111,6 +117,36 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        camera.rotatePitch(1.0);
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        camera.rotateYaw(-1.0);
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        camera.rotateYaw(1.0);
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        camera.rotatePitch(-1.0);
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        camera.moveForward(0.1);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        camera.moveBackward(0.1);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        camera.moveLeft(0.1);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        camera.moveRight(0.1);
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        camera.moveUp(0.1);
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        camera.moveDown(0.1);
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
