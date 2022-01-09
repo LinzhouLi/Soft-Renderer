@@ -41,14 +41,12 @@ float Lerp(const float& f1, const float& f2, const float& f3, const glm::vec3& f
 // 两个点之间线性插值
 Vertex Lerp(const Vertex& v1, const Vertex& v2, const float& factor) {
 	Vertex result;
-	float z1 = v1.windowPos.w;
-	float z2 = v2.windowPos.w;
-	float z = Lerp(z1, z2, factor);
-	result.worldPos = Lerp(v1.worldPos / z1, v2.worldPos / z2, factor);
+	result.worldPos = Lerp(v1.worldPos, v2.worldPos, factor);
 	result.windowPos = Lerp(v1.windowPos, v2.windowPos, factor);
-	result.color = Lerp(v1.color / z1, v2.color / z2, factor);
-	result.texCoord = Lerp(v1.texCoord / z1, v2.texCoord / z2, factor);
-	result.normal = Lerp(v1.normal / z1, v2.normal / z2, factor);
+	result.color = Lerp(v1.color, v2.color, factor);
+	result.texCoord = Lerp(v1.texCoord, v2.texCoord, factor);
+	result.normal = Lerp(v1.normal, v2.normal, factor);
+	result.z = Lerp(v1.z, v2.z, factor);
 	return result;
 }
 

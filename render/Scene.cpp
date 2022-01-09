@@ -195,6 +195,12 @@ void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* sha
 		depth = frameBuffer->getDepth(x, y);
 		if (v.windowPos.z < depth) { // Éî¶È²âÊÔ
 
+			// Í¸ÊÓÓ³Éä
+			v.worldPos /= v.z;
+			v.texCoord /= v.z;
+			v.normal /= v.z;
+			v.color /= v.z;
+
 			// Æ¬¶Î×ÅÉ«Æ÷
 			frameBuffer->drawPixel(x, y, shader->fragmentShader(v));
 			frameBuffer->setDepth(x, y, v.windowPos.z);

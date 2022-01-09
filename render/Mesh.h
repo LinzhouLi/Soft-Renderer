@@ -30,6 +30,8 @@ public:
 	glm::vec2 texCoord;
 	glm::vec3 normal;
 
+	float z;
+
 	Vertex() = default;
 	~Vertex() = default;
 
@@ -38,10 +40,11 @@ public:
 		const glm::vec4& _windowPos,
 		const glm::vec4& _color,
 		const glm::vec2& _texCoord,
-		const glm::vec3& _normal
-	) : worldPos(_worldPos), windowPos(_windowPos), color(_color), texCoord(_texCoord), normal(_normal) { }
+		const glm::vec3& _normal,
+		const float _z
+	) : worldPos(_worldPos), windowPos(_windowPos), color(_color), texCoord(_texCoord), normal(_normal), z(_z) { }
 
-	Vertex(const Vertex& v) : worldPos(v.worldPos), windowPos(v.windowPos), color(v.color), texCoord(v.texCoord), normal(v.normal) { }
+	Vertex(const Vertex& v) : worldPos(v.worldPos), windowPos(v.windowPos), color(v.color), texCoord(v.texCoord), normal(v.normal), z(v.z) { }
 
 };
 
