@@ -51,5 +51,6 @@ glm::vec3 DirectionLight::calculateColor(
 	}
 	glm::vec3 diffuse = color * diff * (albedo / 255.0f);
 	glm::vec3 specul = specular * spec;
-	return (diffuse + specul) * intensity * 255.0f;
+	glm::vec3 result = (diffuse + specul) * intensity * 255.0f;
+	return result;
 }

@@ -33,9 +33,9 @@ void FrameBuffer::drawPixel(const int& x, const int& y, const glm::vec4& color) 
 	}
 	int xy = y * width + x;
 	unsigned char* p = this->colorBuffer.data();
-	*(p + xy * 4) = color.r;
-	*(p + xy * 4 + 1) = color.g;
-	*(p + xy * 4 + 2) = color.b;
+	*(p + xy * 4) = std::min(color.r, 255.0f);
+	*(p + xy * 4 + 1) = std::min(color.g, 255.0f);
+	*(p + xy * 4 + 2) = std::min(color.b, 255.0f);
 	*(p + xy * 4 + 3) = color.a;
 }
 

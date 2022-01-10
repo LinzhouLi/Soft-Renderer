@@ -24,7 +24,7 @@ const unsigned int SCR_HEIGHT = 600;
 int fps = 0;
 
 Scene scene(SCR_WIDTH, SCR_HEIGHT);
-Camera camera(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 45.0f,  0.1f, 100.0f);
+Camera camera(glm::vec3(-3.0f, 3.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 45.0f,  0.1f, 100.0f);
 
 void ShowFps(GLFWwindow* window) {
     while (1) {
@@ -63,7 +63,7 @@ int main()
     DirectionLight dirctionLight1 = DirectionLight(glm::vec3(-1, -1, -1), glm::vec3(255, 255, 255));
     DirectionLight dirctionLight2 = DirectionLight(glm::vec3(1, 1, 1), glm::vec3(255, 255, 255));
     scene.add(&dirctionLight1);
-    //scene.add(&dirctionLight2);
+    scene.add(&dirctionLight2);
     scene.setBackgroundColor(glm::vec4(30, 80, 90, 255));
 
     Mesh box = createBox(glm::vec3(0.0f, 0.0f, 0.0f), 0.5);

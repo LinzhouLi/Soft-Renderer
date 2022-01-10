@@ -1,5 +1,17 @@
-# render
-从零开始实现一个软渲染器
+---
+presentation:
+  theme: serif.css
+  mouseWheel: true
+  width: 1000
+  height: 900
+---
+
+<!-- slide -->
+
+### 从零开始实现一个软渲染器
+1953910 李林洲
+
+<!-- slide -->
 
 ## 依赖
 
@@ -11,17 +23,25 @@
 - stb_image.h  图片文件加载
 - glad  用户加载OpenGL函数
 
+<!-- slide -->
+
 ## 类图
 
 <img src="img/classDiag.png">
+
+<!-- slide -->
 
 ## 渲染流程
 
 <img src="img/pipeline.png" width=25%>
 
+<!-- slide -->
+
 ### drawMesh
 
 <img src="img/drawMesh.png" width=80%>
+
+<!-- slide -->
 
 #### 顶点着色器
 
@@ -42,15 +62,17 @@ $$
 \right)
 $$
 
+<!-- slide -->
+
 #### 剔除
 
 背面剔除：相机正方向与三角面不一致时剔除
 
 视锥剔除：计算当前摄像机对应的视锥平面(上下左右远近)，三个点都不在视锥中的平面剔除
 
-cohen-sutherland裁剪：未实现
-
 <img src="img\视锥剔除.png" width=30%>
+
+<!-- slide -->
 
 ### drawTriangle
 
@@ -58,9 +80,13 @@ cohen-sutherland裁剪：未实现
 
 <img src="img\scanline.png" width=50%>
 
+<!-- slide -->
+
 #### 边界函数算法
 
 <img src="img\edgeFunction.png" width=50%>
+
+<!-- slide -->
 
 分块优化：
 
@@ -69,6 +95,8 @@ cohen-sutherland裁剪：未实现
 3. 完全在三角形外
 
 <img src="img\分块优化.png" width=40%>
+
+<!-- slide -->
 
 重心坐标系：
 
@@ -79,6 +107,8 @@ cohen-sutherland裁剪：未实现
 
 结果：单线程运行，边界函数算法反而比扫描线算法更慢
 
+<!-- slide -->
+
 ### fragmentShader
 
 #### 纹理映射
@@ -87,9 +117,13 @@ cohen-sutherland裁剪：未实现
 
 <img src="img\仿射纹理映射.png" width=40%>
 
+<!-- slide -->
+
 透视纹理映射
 
 <img src="img\透视纹理映射.png" width=40%>
+
+<!-- slide -->
 
 #### 光照
 
@@ -108,7 +142,11 @@ vec3 viewDir = normalize(cameraPos - worldPos); // 观察方向
 float spec = pow(dot(reflectDir, viewDir), gloss);
 vec3 result = spec * lightColor * Intensity
 ```
+<!-- slide -->
 
-## 实时渲染效果
-
+## 渲染效果
 <img src="img\result.png" width=400>
+
+<!-- slide -->
+
+# Thanks
