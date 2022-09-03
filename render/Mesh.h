@@ -16,10 +16,17 @@ public:
 
 	RawVertex(
 		const glm::vec4& _pos,
-		const glm::vec4& _color = glm::vec4(0, 0, 0, 0),
 		const glm::vec2& _tex = glm::vec2(0, 0),
-		const glm::vec3& _normal = glm::vec3(0, 0, 1)
-	) : position(_pos), color(_color), texCorrd(_tex), normal(_normal) { }
+		const glm::vec3& _normal = glm::vec3(0, 0, 1),
+		const glm::vec4& _color = glm::vec4(255, 255, 255, 255)
+	) : position(_pos), texCorrd(_tex), normal(_normal), color(_color) { }
+
+	RawVertex(
+		const glm::vec3& _pos,
+		const glm::vec2& _tex = glm::vec2(0, 0),
+		const glm::vec3& _normal = glm::vec3(0, 0, 1),
+		const glm::vec4& _color = glm::vec4(255, 255, 255, 255)
+	) : position(glm::vec4(_pos, 1.0f)), texCorrd(_tex), normal(_normal), color(_color) { }
 };
 
 class Vertex {
