@@ -19,7 +19,7 @@ Vertex Shader::vertexShader(const RawVertex& v) {
 	Vertex result;
 	result.worldPos = modelMatrix * v.position;
 	result.windowPos = this->scene->projectMatrix * this->scene->viewMatrix * result.worldPos;
-	result.z = 1 / result.windowPos.w; // 处理纹理透视映射
+	result.z = 1 / result.windowPos.w; // 澶勭悊绾圭悊閫忚鏄犲皠
 	result.worldPos *= result.z;
 	result.color = v.color * result.z;
 	result.normal = v.normal * result.z;

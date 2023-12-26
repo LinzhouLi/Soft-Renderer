@@ -8,7 +8,7 @@
 using std::string;
 using std::vector;
 
-// ×Ö·û´®·Ö¸î
+// å­—ç¬¦ä¸²åˆ†å‰²
 vector<string> split(const string& str, const string& delimiter) {
 	string::size_type lastPos = str.find_first_not_of(delimiter, 0);
 	string::size_type pos = str.find_first_of(delimiter, lastPos);

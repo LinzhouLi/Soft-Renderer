@@ -23,10 +23,10 @@ Mesh& Mesh::operator+=(const Mesh& mesh) {
 
 void Mesh::addMesh(const Mesh& mesh) {
 	int offset = VBO.size();
-	VBO.insert(VBO.end(), mesh.VBO.begin(), mesh.VBO.end()); // 加入mesh中所有VBO
-	EBO.reserve(EBO.size() + mesh.EBO.size()); // 增加EBO vector预留空间
+	VBO.insert(VBO.end(), mesh.VBO.begin(), mesh.VBO.end()); // 鍔犲叆mesh涓墍鏈塚BO
+	EBO.reserve(EBO.size() + mesh.EBO.size()); // 澧炲姞EBO vector棰勭暀绌洪棿
 	const unsigned int* p = mesh.EBO.data();
-	for (int i = 0; i < mesh.EBO.size(); i++) { // 加入mesh中所有EBO
+	for (int i = 0; i < mesh.EBO.size(); i++) { // 鍔犲叆mesh涓墍鏈塃BO
 		EBO.push_back(offset + *(p + i));
 	}
 }

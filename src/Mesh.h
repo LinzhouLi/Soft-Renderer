@@ -1,10 +1,10 @@
-#ifndef __MESH_H__
+ï»¿#ifndef __MESH_H__
 #define __MESH_H__
 
 #include <glm/glm.hpp>
 #include <vector>
 
-class RawVertex { // ¶¥µã
+class RawVertex { // é¡¶ç‚¹
 public:
 	glm::vec4 position;
 	glm::vec4 color;
@@ -57,8 +57,8 @@ public:
 
 class Mesh {
 public:
-	std::vector<RawVertex> VBO; // ¶¥µã»º³å¶ÔÏó
-	std::vector<unsigned int> EBO; // Ë÷Òý»º³å¶ÔÏó
+	std::vector<RawVertex> VBO; // é¡¶ç‚¹ç¼“å†²å¯¹è±¡
+	std::vector<unsigned int> EBO; // ç´¢å¼•ç¼“å†²å¯¹è±¡
 
 	Mesh() = default;
 	Mesh(const int& vNum, const int iNum);

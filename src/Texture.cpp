@@ -1,7 +1,7 @@
 #include "Texture.h"
 
 #ifndef STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION // 用于stb_image.h文件
+#define STB_IMAGE_IMPLEMENTATION // 鐢ㄤ簬stb_image.h鏂囦欢
 #include <stb_image.h>
 #endif // !STB_IMAGE_IMPLEMENTATION
 

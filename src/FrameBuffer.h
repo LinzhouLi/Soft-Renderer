@@ -1,4 +1,4 @@
-#ifndef __FRAMEBUFFER_H__
+ï»¿#ifndef __FRAMEBUFFER_H__
 #define __FRAMEBUFFER_H__
 
 #include <vector>
@@ -7,7 +7,7 @@
 class FrameBuffer {
 private:
 	int width, height;
-	std::vector<float> depthBuffer; // Éî¶È»º³åÇø
+	std::vector<float> depthBuffer; // æ·±åº¦ç¼“å†²åŒº
 
 public:
 	std::vector<unsigned char> colorBuffer;

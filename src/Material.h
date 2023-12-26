@@ -1,4 +1,4 @@
-#ifndef __MATERIAL_H__
+﻿#ifndef __MATERIAL_H__
 #define __MATERIAL_H__
 
 #include <glm/glm.hpp>

@@ -1,4 +1,4 @@
-#ifndef __MATH_H__
+ï»¿#ifndef __MATH_H__
 #define __MATH_H__
 
 #include <glm/glm.hpp>
@@ -7,13 +7,13 @@
 class Vertex;
 
 /*
-* ¼ÆËãÈı½ÇĞÎÖØĞÄ×ø±ê
+* è®¡ç®—ä¸‰è§’å½¢é‡å¿ƒåæ ‡
 */
 glm::vec3 getBarycentric(const Vertex& A, const Vertex& B, const Vertex& C, const glm::vec2& P);
 
 /*
-* ¼ÆËã´°¿Ú¾ØÕó
-* glmÊ¹ÓÃĞĞ¾ØÕó, ´æ´¢Ê±ĞèÒª×ªÖÃ
+* è®¡ç®—çª—å£çŸ©é˜µ
+* glmä½¿ç”¨è¡ŒçŸ©é˜µ, å­˜å‚¨æ—¶éœ€è¦è½¬ç½®
 * Vp = [ w/2,  0 ,  0 , w/2+x,
 *		  0 , h/2,  0 , h/2+y,
 *		  0 ,  0 ,  1 ,   0  ,
@@ -22,42 +22,42 @@ glm::vec3 getBarycentric(const Vertex& A, const Vertex& B, const Vertex& C, cons
 glm::mat4 getViewPortMatrix(int x, int y, int width, int height);
 
 /*
-* ¼ÆËãÉãÏñ»ú¾ØÕó
-* glmÊ¹ÓÃĞĞ¾ØÕó, ´æ´¢Ê±ĞèÒª×ªÖÃ
+* è®¡ç®—æ‘„åƒæœºçŸ©é˜µ
+* glmä½¿ç”¨è¡ŒçŸ©é˜µ, å­˜å‚¨æ—¶éœ€è¦è½¬ç½®
 */
 glm::mat4 getViewMatrix(const glm::vec3& pos, const glm::vec3 front, const glm::vec3 right, const glm::vec3 up);
 
 /*
-* ¼ÆËãÍ¶Ó°Í¸ÊÓ¾ØÕó
-* glmÊ¹ÓÃĞĞ¾ØÕó, ´æ´¢Ê±ĞèÒª×ªÖÃ
+* è®¡ç®—æŠ•å½±é€è§†çŸ©é˜µ
+* glmä½¿ç”¨è¡ŒçŸ©é˜µ, å­˜å‚¨æ—¶éœ€è¦è½¬ç½®
 */
 glm::mat4 getPerspectiveMatrix(const float& fovy, const float& aspect, const float& n, const float& f);
 
 /*
-* Í¸ÊÓ³ı·¨
-* ½«Æë´Î×ø±ê×ª»»ÎªÈıÎ¬×ø±ê
+* é€è§†é™¤æ³•
+* å°†é½æ¬¡åæ ‡è½¬æ¢ä¸ºä¸‰ç»´åæ ‡
 */
 void perspectiveDivision(Vertex& v);
 
 /*
-* ±³ÃæÌŞ³ı
+* èƒŒé¢å‰”é™¤
 */
 bool backFaceCutting(const Vertex& A, const Vertex& B, const Vertex& C);
 
 /*
-* ¼ÆËãÊÓ×¶Æ½Ãæ
+* è®¡ç®—è§†é”¥å¹³é¢
 * vp = projectMatrix * viewMatrix
 */
 void updateViewFrustumPlanes(std::vector<glm::vec4>& planes, const glm::mat4& vp);
 
 /*
-* ÊÓ×¶È¥³ı
+* è§†é”¥å»é™¤
 */
 bool viewFrustumCutting(const Vertex& A, const Vertex& B, const Vertex& C, std::vector<glm::vec4>& planes);
 
 
 /*
-* ÏßĞÔ²åÖµ
+* çº¿æ€§æ’å€¼
 */
 glm::vec4 Lerp(const glm::vec4& v1, const glm::vec4& v2, const float& factor);
 
@@ -75,25 +75,25 @@ float Lerp(const float& f1, const float& f2, const float& factor);
 
 float Lerp(const float& f1, const float& f2, const float& f3, const glm::vec3& factor);
 
-// Á½¸öµãÖ®¼äÏßĞÔ²åÖµ
+// ä¸¤ä¸ªç‚¹ä¹‹é—´çº¿æ€§æ’å€¼
 Vertex Lerp(const Vertex& v1, const Vertex& v2, const float& factor);
 
-// Èı½ÇĞÎÖØĞÄ×ø±êÏµÏßĞÔ²åÖµ
+// ä¸‰è§’å½¢é‡å¿ƒåæ ‡ç³»çº¿æ€§æ’å€¼
 Vertex Lerp(const Vertex& v1, const Vertex& v2, const Vertex& v3, const glm::vec3& factor);
 
-// ¼ÆËã¹âÏß·´Éä·½Ïò
+// è®¡ç®—å…‰çº¿åå°„æ–¹å‘
 glm::vec3 reflect(const glm::vec3& lightDir, const glm::vec3& normal);
 
 /*
-* ¹¤¾ßº¯Êı
+* å·¥å…·å‡½æ•°
 */
 float triMin(float a, float b, float c);
 
 float triMax(float a, float b, float c);
 
 /*
-* µãµ½Ãæ¾àÀë
-* Æ½Ãæ·½³Ì Ax + By + Cz + D = 0
+* ç‚¹åˆ°é¢è·ç¦»
+* å¹³é¢æ–¹ç¨‹ Ax + By + Cz + D = 0
 * distance = Ax + By + Cz + D
 */
 float distance(const glm::vec3& point, const glm::vec4& plane);

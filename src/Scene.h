@@ -1,4 +1,4 @@
-#ifndef __SCENE_H__
+ï»¿#ifndef __SCENE_H__
 #define __SCENE_H__
 
 #include <glad/glad.h>
@@ -33,9 +33,9 @@ public:
 
 	Material* currentMaterial;
 
-	glm::mat4 viewMatrix; // ¹Û²ì¿Õ¼ä¾ØÕó
-	glm::mat4 projectMatrix; // Í¶Ó°¾ØÕó
-	glm::mat4 viewPortMatrix; // ´°¿Ú¾ØÕó
+	glm::mat4 viewMatrix; // è§‚å¯Ÿç©ºé—´çŸ©é˜µ
+	glm::mat4 projectMatrix; // æŠ•å½±çŸ©é˜µ
+	glm::mat4 viewPortMatrix; // çª—å£çŸ©é˜µ
 
 	int width;
 	int height;

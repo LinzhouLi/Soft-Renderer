@@ -1,4 +1,4 @@
-#ifndef __CAMERA_H__
+ï»¿#ifndef __CAMERA_H__
 #define __CAMERA_H__
 
 #include <glm/glm.hpp>
@@ -13,8 +13,8 @@ public:
 	float fov;
 	float aspect;
 
-	float pitch; // ¸©Ñö
-	float yaw; // Æ«º½
+	float pitch; // ä¿¯ä»°
+	float yaw; // åèˆª
 
 	float n; // near
 	float f; // far
@@ -40,8 +40,8 @@ public:
 	void moveUp(const float& distance);
 	void moveDown(const float& distance);
 
-	void rotatePitch(const float& angle); // ¸©Ñö
-	void rotateYaw(const float& angle); // Æ«º½
+	void rotatePitch(const float& angle); // ä¿¯ä»°
+	void rotateYaw(const float& angle); // åèˆª
 
 	void updateVectors();
 };

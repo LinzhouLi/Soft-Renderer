@@ -40,10 +40,10 @@ glm::vec3 DirectionLight::calculateColor(
 	const glm::vec3& albedo,
 	const int& gloss
 ) {
-	glm::vec3 norm = glm::normalize(normal); // Æ¬¶Î·¨ÏòÁ¿
+	glm::vec3 norm = glm::normalize(normal); // ç‰‡æ®µæ³•å‘é‡
 	float diff = glm::dot(norm, -direction);
-	glm::vec3 reflectDir = reflect(direction, norm); // ·´Éä¹â·½ÏòÏòÁ¿
-	glm::vec3 viewDir = glm::normalize(cameraPos - worldPos); // ¹Û²ì·½ÏòÏòÁ¿
+	glm::vec3 reflectDir = reflect(direction, norm); // åå°„å…‰æ–¹å‘å‘é‡
+	glm::vec3 viewDir = glm::normalize(cameraPos - worldPos); // è§‚å¯Ÿæ–¹å‘å‘é‡
 	float spec = pow(glm::dot(reflectDir, viewDir), gloss);
 
 	if (diff < 0 || spec < 0) {

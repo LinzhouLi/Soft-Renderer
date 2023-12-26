@@ -15,7 +15,7 @@ Camera::Camera(
 	up = glm::normalize(glm::cross(right, front));
 	fov = glm::radians(_fov);
 
-	// Çó¸©Ñö½ÇºÍÆ«º½½Ç
+	// æ±‚ä¿¯ä»°è§’å’Œåèˆªè§’
 	glm::vec3 worldFront = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 frontXZ = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
 	float cosPitch = glm::dot(front, frontXZ);

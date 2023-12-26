@@ -1,4 +1,4 @@
-#ifndef __OBJECT_H__
+﻿#ifndef __OBJECT_H__
 #define __OBJECT_H__
 
 #include <glm/glm.hpp>

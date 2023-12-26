@@ -22,9 +22,9 @@ Scene::~Scene() {
 		delete frameBuffer;
 	}
 	lights.clear();
-	std::vector <Light*>().swap(lights); // Çå¿ÕÄÚ´æ
+	std::vector <Light*>().swap(lights); // æ¸…ç©ºå†…å­˜
 	objects.clear();
-	std::vector <Object*>().swap(objects); // Çå¿ÕÄÚ´æ
+	std::vector <Object*>().swap(objects); // æ¸…ç©ºå†…å­˜
 	frameBuffer = nullptr;
 }
 
@@ -35,9 +35,9 @@ void Scene::init() {
 	viewFrustumPlanes.resize(6, glm::vec4(0.0f));
 
 	lights.clear();
-	std::vector <Light*>().swap(lights); // Çå¿ÕÄÚ´æ
+	std::vector <Light*>().swap(lights); // æ¸…ç©ºå†…å­˜
 	objects.clear();
-	std::vector <Object*>().swap(objects); // Çå¿ÕÄÚ´æ
+	std::vector <Object*>().swap(objects); // æ¸…ç©ºå†…å­˜
 
 	if (frameBuffer) {
 		delete frameBuffer;
@@ -72,9 +72,9 @@ void Scene::add(Object* object) {
 
 void Scene::updateCamera() {
 	camera->updateAspact(width, height);
-	viewMatrix = camera->viewMatrix(); // ¸üĞÂ¹Û²ì¿Õ¼ä¾ØÕó
-	projectMatrix = camera->perspectiveMatrix(); // ¸üĞÂÍ¶Ó°¾ØÕó
-	updateViewFrustumPlanes(viewFrustumPlanes, projectMatrix * viewMatrix); // ¸üĞÂÊÓ×¶Æ½Ãæ
+	viewMatrix = camera->viewMatrix(); // æ›´æ–°è§‚å¯Ÿç©ºé—´çŸ©é˜µ
+	projectMatrix = camera->perspectiveMatrix(); // æ›´æ–°æŠ•å½±çŸ©é˜µ
+	updateViewFrustumPlanes(viewFrustumPlanes, projectMatrix * viewMatrix); // æ›´æ–°è§†é”¥å¹³é¢
 }
 
 void Scene::setBackgroundColor(const glm::vec4& color) {
@@ -104,19 +104,19 @@ void Scene::writeVertex(Vertex& v, Shader* shader) {
 }
 
 /*
-* ¹âÕ¤»¯Èı½ÇĞÎ
-* Ê¹ÓÃÖØĞÄ×ø±êÏµ, ±éÀúÈı½ÇĞÎ°üÎ§ºĞÌî³ä
-* ´ËËã·¨Ò×ÓÚ²åÖµ, µ«ÔËĞĞËÙ¶È¹ıÂı, ²»ÔÙÊ¹ÓÃ
+* å…‰æ …åŒ–ä¸‰è§’å½¢
+* ä½¿ç”¨é‡å¿ƒåæ ‡ç³», éå†ä¸‰è§’å½¢åŒ…å›´ç›’å¡«å……
+* æ­¤ç®—æ³•æ˜“äºæ’å€¼, ä½†è¿è¡Œé€Ÿåº¦è¿‡æ…¢, ä¸å†ä½¿ç”¨
 */
 void Scene::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
 
-	// ¼ÆËã°üÎ§ºĞ
+	// è®¡ç®—åŒ…å›´ç›’
 	glm::vec2 min, max;
 	min.x = triMin(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
 	min.y = triMin(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
 	max.x = triMax(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
 	max.y = triMax(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
-	// ±éÀú°üÎ§ºĞÖĞµÄµã
+	// éå†åŒ…å›´ç›’ä¸­çš„ç‚¹
 	glm::vec2 pos;
 	glm::vec3 barycentric;
 	Vertex v;
@@ -124,8 +124,8 @@ void Scene::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const 
 		for (int y = min.y; y <= max.y; y++) {
 			pos.x = x;
 			pos.y = y;
-			barycentric = getBarycentric(v1, v2, v3, pos); // ¼ÆËãÖØĞÄ×ø±ê
-			if (barycentric[0] >= 0 && barycentric[1] >= 0 && barycentric[2] >= 0) { // µãÔÚÈı½ÇĞÎÄÚ²¿
+			barycentric = getBarycentric(v1, v2, v3, pos); // è®¡ç®—é‡å¿ƒåæ ‡
+			if (barycentric[0] >= 0 && barycentric[1] >= 0 && barycentric[2] >= 0) { // ç‚¹åœ¨ä¸‰è§’å½¢å†…éƒ¨
 				v = Lerp(v1, v2, v3, barycentric);
 				frameBuffer->drawPixel(v.windowPos.x, v.windowPos.y, shader->fragmentShader(v));
 			}
@@ -134,18 +134,18 @@ void Scene::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const 
 }
 
 /*
-* ¹âÕ¤»¯Èı½ÇĞÎ
-* Ê¹ÓÃÆÕÍ¨Æ½Ãæ×ø±êÏµ, ½«Èı½ÇĞÎ²ğ·Ö³ÉÉÏÏÂÁ½²¿·Ö·Ö±ğÊ¹ÓÃÉ¨ÃèÏßËã·¨½øĞĞÌî³äÓë²åÖµ
+* å…‰æ …åŒ–ä¸‰è§’å½¢
+* ä½¿ç”¨æ™®é€šå¹³é¢åæ ‡ç³», å°†ä¸‰è§’å½¢æ‹†åˆ†æˆä¸Šä¸‹ä¸¤éƒ¨åˆ†åˆ†åˆ«ä½¿ç”¨æ‰«æçº¿ç®—æ³•è¿›è¡Œå¡«å……ä¸æ’å€¼
 */
 void Scene::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
 
-	// ½«v1,v2,v3°´ÕÕ×İ×ø±êÓÉĞ¡µ½´óÅÅĞò
+	// å°†v1,v2,v3æŒ‰ç…§çºµåæ ‡ç”±å°åˆ°å¤§æ’åº
 	Vertex arr[3] = { v1, v2, v3 };
 	if (arr[0].windowPos.y > arr[1].windowPos.y) std::swap(arr[0], arr[1]);
 	if (arr[1].windowPos.y > arr[2].windowPos.y) std::swap(arr[1], arr[2]);
 	if (arr[0].windowPos.y > arr[1].windowPos.y) std::swap(arr[0], arr[1]);
 
-	// Ìî³äÇ°³õÊ¼»¯
+	// å¡«å……å‰åˆå§‹åŒ–
 	int minY = arr[0].windowPos.y, midY = arr[1].windowPos.y, maxY = arr[2].windowPos.y;
 	int bottomHeight = midY - minY, upperHeight = maxY - midY, totalHeight = maxY - minY;
 
@@ -155,7 +155,7 @@ void Scene::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, S
 	Vertex leftpos, rightpos;
 	float weight;
 
-	// Ìî³äÏÂ°ë²¿·Ö
+	// å¡«å……ä¸‹åŠéƒ¨åˆ†
 	for (int y = minY; y < midY; y++) {
 		weight = float(y - minY) / bottomHeight;
 		leftpos = Lerp(arr[0], leftPoint, weight);
@@ -163,7 +163,7 @@ void Scene::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, S
 		scanLineFilling(leftpos, rightpos, shader);
 	}
 
-	// Ìî³äÉÏ°ë²¿·Ö
+	// å¡«å……ä¸ŠåŠéƒ¨åˆ†
 	for (int y = midY; y <= maxY; y++) {
 		weight = float(y - midY) / upperHeight;
 		leftpos = Lerp(leftPoint, arr[2], weight);
@@ -173,8 +173,8 @@ void Scene::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, S
 }
 
 /*
-* É¨ÃèÏßÌî³ä
-* Ìî³ä²¢²åÖµ´Óleftµ½rightµÄËùÓĞµã
+* æ‰«æçº¿å¡«å……
+* å¡«å……å¹¶æ’å€¼ä»leftåˆ°rightçš„æ‰€æœ‰ç‚¹
 */
 void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* shader) {
 
@@ -193,15 +193,15 @@ void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* sha
 		v = Lerp(left, right, float(x - xmin) / lenght);
 
 		depth = frameBuffer->getDepth(x, y);
-		if (v.windowPos.z < depth) { // Éî¶È²âÊÔ
+		if (v.windowPos.z < depth) { // æ·±åº¦æµ‹è¯•
 
-			// Í¸ÊÓÓ³Éä
+			// é€è§†æ˜ å°„
 			v.worldPos /= v.z;
 			v.texCoord /= v.z;
 			v.normal /= v.z;
 			v.color /= v.z;
 
-			// Æ¬¶Î×ÅÉ«Æ÷
+			// ç‰‡æ®µç€è‰²å™¨
 			frameBuffer->drawPixel(x, y, shader->fragmentShader(v));
 			frameBuffer->setDepth(x, y, v.windowPos.z);
 		}
@@ -209,8 +209,8 @@ void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* sha
 }
 
 /*
-* »æÖÆMesh
-* Ò»¸öMeshÓÉ¶à¸öÈı½ÇÃæ¹¹³É
+* ç»˜åˆ¶Mesh
+* ä¸€ä¸ªMeshç”±å¤šä¸ªä¸‰è§’é¢æ„æˆ
 */
 void Scene::drawMesh(const Mesh* mesh, Shader* shader) {
 	int size = mesh->EBO.size();
@@ -224,23 +224,23 @@ void Scene::drawMesh(const Mesh* mesh, Shader* shader) {
 		B = *(mesh->VBO.data() + *(mesh->EBO.data() + i + 1));
 		C = *(mesh->VBO.data() + *(mesh->EBO.data() + i + 2));
 
-		// ¶¥µã×ÅÉ«Æ÷
+		// é¡¶ç‚¹ç€è‰²å™¨
 		v1 = shader->vertexShader(A);
 		v2 = shader->vertexShader(B);
 		v3 = shader->vertexShader(C);
 
-		// ÊÓ×¶ÌŞ³ı
+		// è§†é”¥å‰”é™¤
 		if (viewFrustumCutting(v1, v2, v3, viewFrustumPlanes)) continue;
 
-		// Í¸ÊÓ³ı·¨
+		// é€è§†é™¤æ³•
 		perspectiveDivision(v1);
 		perspectiveDivision(v2);
 		perspectiveDivision(v3);
 
-		// ±³ÃæÌŞ³ı
+		// èƒŒé¢å‰”é™¤
 		if (backFaceCutting(v1, v2, v3)) continue;
 
-		// NDC×ø±ê×ª»»Îª´°¿ÚÆÁÄ»×ø±ê
+		// NDCåæ ‡è½¬æ¢ä¸ºçª—å£å±å¹•åæ ‡
 		v1.windowPos = viewPortMatrix * v1.windowPos;
 		v2.windowPos = viewPortMatrix * v2.windowPos;
 		v3.windowPos = viewPortMatrix * v3.windowPos;
@@ -257,13 +257,13 @@ void Scene::drawMesh(const Mesh* mesh, Shader* shader) {
 }
 
 /*
-* Bresenham»­ÏßËã·¨
+* Bresenhamç”»çº¿ç®—æ³•
 */
 void Scene::drawLine(const Vertex& v1, const Vertex& v2) {
 	int x0 = v1.windowPos.x, x1 = v2.windowPos.x;
 	int y0 = v1.windowPos.y, y1 = v2.windowPos.y;
-	bool steep = false; // ÊÇ·ñ½»»»x,yÖá
-	if (std::abs(x0 - x1) < std::abs(y0 - y1)) { // Èç¹ûĞ±ÂÊ´óÓÚ1, Ôò½»»»x,yÖá
+	bool steep = false; // æ˜¯å¦äº¤æ¢x,yè½´
+	if (std::abs(x0 - x1) < std::abs(y0 - y1)) { // å¦‚æœæ–œç‡å¤§äº1, åˆ™äº¤æ¢x,yè½´
 		std::swap(x0, y0);
 		std::swap(x1, y1);
 		steep = true;

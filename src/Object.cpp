@@ -17,7 +17,7 @@ void Object::transform(const glm::mat4& m) {
 void Object::loadObj(const string& filePath) {
 	std::ifstream in(filePath);
 	if (!in) {
-		std::cout << filePath << "ÎÄ¼ş´ò¿ª´íÎó!" << std::endl;
+		std::cout << filePath << "æ–‡ä»¶æ‰“å¼€é”™è¯¯!" << std::endl;
 		return;
 	}
 	this->mesh->VBO.clear();
@@ -32,30 +32,30 @@ void Object::loadObj(const string& filePath) {
 		std::getline(in, line);
 		std::istringstream iss(line);
 		iss >> flagStr;
-		if (flagStr == "v") { // ¶¥µã×ø±ê
+		if (flagStr == "v") { // é¡¶ç‚¹åæ ‡
 			glm::vec3 v;
 			iss >> v.x >> v.y >> v.z;
 			RawVertex vertex(v);
 			this->mesh->VBO.push_back(vertex);
 		}
-		else if (flagStr == "vt") { // ÌùÍ¼×ø±ê
+		else if (flagStr == "vt") { // è´´å›¾åæ ‡
 			glm::vec2 vt;
 			iss >> vt.x >> vt.y;
 			vt.y = 1 - vt.y;
 			texCoords.push_back(vt);
 		}
-		else if (flagStr == "vn") { // ·¨ÏòÁ¿
+		else if (flagStr == "vn") { // æ³•å‘é‡
 			glm::vec3 vn;
 			iss >> vn.x >> vn.y >> vn.z;
 			normals.push_back(vn);
 		}
-		else if (flagStr == "f") { // Èı½ÇÃæ¶ÔÓ¦Èı¸ö¶¥µãµÄĞÅÏ¢
+		else if (flagStr == "f") { // ä¸‰è§’é¢å¯¹åº”ä¸‰ä¸ªé¡¶ç‚¹çš„ä¿¡æ¯
 			int vIndex, vtIndex, vnIndex;
-			char bar; // ·Ö¸ô·û'/'
+			char bar; // åˆ†éš”ç¬¦'/'
 			for (int i = 0; i < 3; i++) {
 				iss >> vIndex >> bar >> vtIndex >> bar >> vnIndex;
 				if (vIndex > this->mesh->VBO.size() || vtIndex > texCoords.size() || vnIndex > normals.size()) {
-					std::cout << filePath << "ÎÄ¼ş³ö´í!" << std::endl;
+					std::cout << filePath << "æ–‡ä»¶å‡ºé”™!" << std::endl;
 					return;
 				}
 				this->mesh->VBO[vIndex - 1].texCorrd = texCoords[vtIndex - 1];
