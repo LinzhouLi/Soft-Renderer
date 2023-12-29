@@ -53,13 +53,15 @@ void Object::loadObj(const string& filePath) {
 			int vIndex, vtIndex, vnIndex;
 			char bar; // 分隔符'/'
 			for (int i = 0; i < 3; i++) {
-				iss >> vIndex >> bar >> vtIndex >> bar >> vnIndex;
+				//iss >> vIndex >> bar >> vtIndex >> bar >> vnIndex;
+				iss >> vIndex >> bar >> vnIndex;
 				if (vIndex > this->mesh->VBO.size() || vtIndex > texCoords.size() || vnIndex > normals.size()) {
 					std::cout << filePath << "文件出错!" << std::endl;
 					return;
 				}
-				this->mesh->VBO[vIndex - 1].texCorrd = texCoords[vtIndex - 1];
-				this->mesh->VBO[vIndex - 1].normal = normals[vIndex - 1];
+				//this->mesh->VBO[vIndex - 1].texCorrd = texCoords[vtIndex - 1];
+				this->mesh->VBO[vIndex - 1].texCorrd = glm::vec2(0.0, 0.0);
+				this->mesh->VBO[vIndex - 1].normal = normals[vnIndex - 1];
 				this->mesh->EBO.push_back(vIndex - 1);
 			}
 		}

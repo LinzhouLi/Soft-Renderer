@@ -28,16 +28,16 @@ Vertex Shader::vertexShader(const RawVertex& v) {
 }
 
 glm::vec4 Shader::fragmentShader(const Vertex& v) {
-	if (this->scene->currentMaterial->texture == nullptr) {
-		return v.color;
-	}
-	else {
-		glm::vec3 resultColor = this->scene->currentMaterial->texture->sample2D(v.texCoord);
-		for (auto light : this->scene->lights) {
-			resultColor = light->calculateColor(v.worldPos, this->scene->camera->position, v.normal, resultColor, this->scene->currentMaterial->gloss);
-		}
-		return glm::vec4(resultColor, 1.0f);
-	}
+	glm::vec3 resultColor = glm::vec3(
+		this->scene->currentMaterial->color.r,
+		this->scene->currentMaterial->color.g,
+		this->scene->currentMaterial->color.b
+	);
+	if (this->scene->currentMaterial->texture != nullptr)
+		resultColor = this->scene->currentMaterial->texture->sample2D(v.texCoord);
+	for (auto light : this->scene->lights)
+		resultColor = light->calculateColor(v.worldPos, this->scene->camera->position, v.normal, resultColor, this->scene->currentMaterial->gloss);
+	return glm::vec4(resultColor, 1.0f);
 }
 
 void Shader::setScene(Scene* s) {

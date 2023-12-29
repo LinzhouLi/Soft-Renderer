@@ -14,8 +14,8 @@ public:
 	Texture* texture;
 	Shader* shader;
 
-	Material(Shader* sha = nullptr, Texture* tex = nullptr, const int& _gloss = 32);
-	Material(const glm::vec4& _color, const glm::vec4& _specular, const int& _gloss);
+	Material(Texture* tex = nullptr, const int& _gloss = 32);
+	Material(const glm::vec4& _color = glm::vec4(255, 255, 255, 255), const int& _gloss = 32);
 	~Material() = default;
 
 	void setShader(Shader* sha);
