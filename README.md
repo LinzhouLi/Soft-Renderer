@@ -8,7 +8,7 @@
 
 [2024.1.24] 新增加载obj文件
 
-<img src="img/monkey.png">
+<img src="img/monkey.png" width=400>
 
 
 
