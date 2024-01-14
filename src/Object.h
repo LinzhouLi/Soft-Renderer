@@ -2,8 +2,6 @@
 #define __OBJECT_H__
 
 #include <glm/glm.hpp>
-#include <string>
-using std::string;
 
 class Mesh;
 class Material;
@@ -17,8 +15,10 @@ public:
 	~Object() = default;
 	Object(Mesh* m, Material* mat) : mesh(m), material(mat) { }
 
+	void setMesh(Mesh* m) { mesh = m; }
+	void setMaterial(Material* mat) { material = mat; }
+
 	void transform(const glm::mat4& m);
-	void loadObj(const string& filePath);
 };
 
 #endif // !__OBJECT_H__

@@ -2,6 +2,16 @@
 
 从零开始实现一个软渲染器
 
+
+
+## Update
+
+[2024.1.24] 新增加载obj文件
+
+<img src="img/monkey.png">
+
+
+
 ## 依赖
 
 位于`include`和`lib`文件夹下。

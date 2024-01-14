@@ -3,6 +3,9 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <string>
+
+using std::string;
 
 class RawVertex { // 顶点
 public:
@@ -69,6 +72,8 @@ public:
 	Mesh& operator+=(const Mesh& mesh);
 	void addMesh(const Mesh& mesh);
 	void addTriangle(const RawVertex& v1, const RawVertex& v2, const RawVertex& v3);
+
+	void loadObj(const string& filePath);
 };
 
 #endif // !__MESH_H__

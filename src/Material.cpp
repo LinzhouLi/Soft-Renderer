@@ -11,10 +11,12 @@ Material::Material(Shader* sha, Texture* tex, const int& _gloss) {
 	shader = sha;
 }
 
-Material::Material(const glm::vec4& _color, const glm::vec4& _specular, const int& _gloss)
-	: color(_color), specular(_specular), gloss(_gloss) {
+Material::Material(Shader* sha, const glm::vec4& _color, const int& _gloss) {
 	texture = nullptr;
-	shader = nullptr;
+	color = _color;
+	specular = glm::vec4(255, 255, 255, 255);
+	shader = sha;
+	gloss = _gloss;
 }
 
 void Material::setShader(Shader* sha) {

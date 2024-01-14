@@ -66,17 +66,27 @@ int main()
     scene.add(&dirctionLight2);
     scene.setBackgroundColor(glm::vec4(30, 80, 90, 255));
 
-    Mesh box1 = createBox(glm::vec3(0.0f, 0.0f, 0.0f), 0.5);
-    Mesh box2 = createBox(glm::vec3(2.0f, 0.0f, 0.0f), 0.3);
+    //Mesh box1 = createBox(glm::vec3(0.0f, 0.0f, 0.0f), 0.5);
+    //Mesh box2 = createBox(glm::vec3(2.0f, 0.0f, 0.0f), 0.3);
+    //Shader shader;
+    //Texture texture1("assets/container.jpg");
+    //Texture texture2("assets/2.png");
+    //Material material1(&shader, &texture1);
+    //Material material2(&shader, &texture2);
+    //Object obj1(&box1, &material1);
+    //Object obj2(&box2, &material2);
+    //scene.add(&obj1);
+    //scene.add(&obj2);
+
+
     Shader shader;
-    Texture texture1("assets/container.jpg");
-    Texture texture2("assets/2.png");
-    Material material1(&shader, &texture1);
-    Material material2(&shader, &texture2);
-    Object obj1(&box1, &material1);
-    Object obj2(&box2, &material2);
-    scene.add(&obj1);
-    scene.add(&obj2);
+    Mesh mesh;
+    mesh.loadObj("./assets/monkey.obj");
+    Texture texture("assets/2.png");
+    Material material(&shader, &texture);
+    Object obj(&mesh, &material);
+    scene.add(&obj);
+
 
     std::thread t(ShowFps, window);
     t.detach();

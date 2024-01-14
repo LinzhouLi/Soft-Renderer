@@ -10,6 +10,8 @@
 #include "Material.h"
 #include "Light.h"
 
+#include <omp.h>
+
 Scene::Scene(const int& w, const int& h, RenderMode m) {
 	width = w;
 	height = h;
@@ -152,22 +154,22 @@ void Scene::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, S
 	Vertex leftPoint = Lerp(arr[0], arr[2], float(bottomHeight) / totalHeight);
 	Vertex rightPoint = arr[1];
 	if (leftPoint.windowPos.x > rightPoint.windowPos.x) std::swap(leftPoint, rightPoint);
-	Vertex leftpos, rightpos;
-	float weight;
 
 	// 填充下半部分
+#pragma omp parallel for
 	for (int y = minY; y < midY; y++) {
-		weight = float(y - minY) / bottomHeight;
-		leftpos = Lerp(arr[0], leftPoint, weight);
-		rightpos = Lerp(arr[0], rightPoint, weight);
+		float weight = float(y - minY) / bottomHeight;
+		Vertex leftpos = Lerp(arr[0], leftPoint, weight);
+		Vertex rightpos = Lerp(arr[0], rightPoint, weight);
 		scanLineFilling(leftpos, rightpos, shader);
 	}
 
 	// 填充上半部分
+#pragma omp parallel for
 	for (int y = midY; y <= maxY; y++) {
-		weight = float(y - midY) / upperHeight;
-		leftpos = Lerp(leftPoint, arr[2], weight);
-		rightpos = Lerp(rightPoint, arr[2], weight);
+		float weight = float(y - midY) / upperHeight;
+		Vertex leftpos = Lerp(leftPoint, arr[2], weight);
+		Vertex rightpos = Lerp(rightPoint, arr[2], weight);
 		scanLineFilling(leftpos, rightpos, shader);
 	}
 }
@@ -179,20 +181,21 @@ void Scene::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, S
 void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* shader) {
 
 	if (left.windowPos.x == right.windowPos.x) {
-		frameBuffer->drawPixel(left.windowPos.x, left.windowPos.y, shader->fragmentShader(left));
+		float depth = frameBuffer->getDepth(left.windowPos.x, left.windowPos.y);
+		if (left.windowPos.z < depth) // 深度测试
+			frameBuffer->drawPixel(left.windowPos.x, left.windowPos.y, shader->fragmentShader(left));
 		return;
 	}
 
 	int xmin = left.windowPos.x, xmax = right.windowPos.x; // 
 	int lenght = xmax - xmin;
 	int y = left.windowPos.y;
-	Vertex v;
-	float depth;
 
+#pragma omp parallel for
 	for (int x = xmin; x <= xmax; x++) {
-		v = Lerp(left, right, float(x - xmin) / lenght);
+		Vertex v = Lerp(left, right, float(x - xmin) / lenght);
 
-		depth = frameBuffer->getDepth(x, y);
+		float depth = frameBuffer->getDepth(x, y);
 		if (v.windowPos.z < depth) { // 深度测试
 
 			// 透视映射
@@ -217,17 +220,17 @@ void Scene::drawMesh(const Mesh* mesh, Shader* shader) {
 	if (size == 0) {
 		return;
 	}
-	RawVertex A, B, C;
-	Vertex v1, v2, v3;
+
+#pragma omp parallel for
 	for (int i = 0; i < size; i += 3) {
-		A = *(mesh->VBO.data() + *(mesh->EBO.data() + i));
-		B = *(mesh->VBO.data() + *(mesh->EBO.data() + i + 1));
-		C = *(mesh->VBO.data() + *(mesh->EBO.data() + i + 2));
+		RawVertex A = *(mesh->VBO.data() + *(mesh->EBO.data() + i));
+		RawVertex B = *(mesh->VBO.data() + *(mesh->EBO.data() + i + 1));
+		RawVertex C = *(mesh->VBO.data() + *(mesh->EBO.data() + i + 2));
 
 		// 顶点着色器
-		v1 = shader->vertexShader(A);
-		v2 = shader->vertexShader(B);
-		v3 = shader->vertexShader(C);
+		Vertex v1 = shader->vertexShader(A);
+		Vertex v2 = shader->vertexShader(B);
+		Vertex v3 = shader->vertexShader(C);
 
 		// 视锥剔除
 		if (viewFrustumCutting(v1, v2, v3, viewFrustumPlanes)) continue;
