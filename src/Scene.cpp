@@ -100,36 +100,41 @@ void Scene::display() {
 	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer->colorBuffer.data());
 }
 
-void Scene::writeVertex(Vertex& v, Shader* shader) {
-	frameBuffer->drawPixel(v.windowPos.x, v.windowPos.y, shader->fragmentShader(v));
-	frameBuffer->setDepth(v.windowPos.x, v.windowPos.y, v.windowPos.z);
+void Scene::drawVertex(int x, int y, Vertex& v, Shader* shader) {
+	float depth = frameBuffer->getDepth(x, y);
+	if (v.windowPos.z < depth) {
+		frameBuffer->setDepth(x, y, v.windowPos.z);
+
+		// 透视映射
+		v.worldPos /= v.z;
+		v.texCoord /= v.z;
+		v.normal /= v.z;
+		v.color /= v.z;
+
+		frameBuffer->drawPixel(x, y, shader->fragmentShader(v));
+	}
 }
 
 /*
 * 光栅化三角形
 * 使用重心坐标系, 遍历三角形包围盒填充
-* 此算法易于插值, 但运行速度过慢, 不再使用
 */
-void Scene::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
+void Scene::drawTriangleBoundary(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
 
 	// 计算包围盒
-	glm::vec2 min, max;
-	min.x = triMin(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
-	min.y = triMin(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
-	max.x = triMax(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
-	max.y = triMax(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
+	int min_x = triMin(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x);
+	int min_y = triMin(v1.windowPos.y, v2.windowPos.y, v3.windowPos.y);
+	int max_x = triMax(v1.windowPos.x, v2.windowPos.x, v3.windowPos.x) + 1;
+	int max_y = triMax(v1.windowPos.y, v2.windowPos.y, v3.windowPos.y) + 1;
+
 	// 遍历包围盒中的点
-	glm::vec2 pos;
-	glm::vec3 barycentric;
-	Vertex v;
-	for (int x = min.x; x <= max.x; x++) {
-		for (int y = min.y; y <= max.y; y++) {
-			pos.x = x;
-			pos.y = y;
-			barycentric = getBarycentric(v1, v2, v3, pos); // 计算重心坐标
+#pragma omp parallel for collapse(2)
+	for (int x = min_x; x < max_x; x++) {
+		for (int y = min_y; y < max_y; y++) {
+			glm::vec3 barycentric = getBarycentric(v1, v2, v3, glm::vec2(x, y)); // 计算重心坐标
 			if (barycentric[0] >= 0 && barycentric[1] >= 0 && barycentric[2] >= 0) { // 点在三角形内部
-				v = Lerp(v1, v2, v3, barycentric);
-				frameBuffer->drawPixel(v.windowPos.x, v.windowPos.y, shader->fragmentShader(v));
+				Vertex v = Lerp(v1, v2, v3, barycentric);
+				drawVertex(x, y, v, shader);
 			}
 		}
 	}
@@ -139,7 +144,7 @@ void Scene::drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const 
 * 光栅化三角形
 * 使用普通平面坐标系, 将三角形拆分成上下两部分分别使用扫描线算法进行填充与插值
 */
-void Scene::drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
+void Scene::drawTriangleScanLine(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader) {
 
 	// 将v1,v2,v3按照纵坐标由小到大排序
 	Vertex arr[3] = { v1, v2, v3 };
@@ -182,8 +187,10 @@ void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* sha
 
 	if (left.windowPos.x == right.windowPos.x) {
 		float depth = frameBuffer->getDepth(left.windowPos.x, left.windowPos.y);
-		if (left.windowPos.z < depth) // 深度测试
+		if (left.windowPos.z < depth) {// 深度测试
+			frameBuffer->setDepth(left.windowPos.x, left.windowPos.y, left.windowPos.z);
 			frameBuffer->drawPixel(left.windowPos.x, left.windowPos.y, shader->fragmentShader(left));
+		}
 		return;
 	}
 
@@ -194,20 +201,7 @@ void Scene::scanLineFilling(const Vertex& left, const Vertex& right, Shader* sha
 #pragma omp parallel for
 	for (int x = xmin; x <= xmax; x++) {
 		Vertex v = Lerp(left, right, float(x - xmin) / lenght);
-
-		float depth = frameBuffer->getDepth(x, y);
-		if (v.windowPos.z < depth) { // 深度测试
-
-			// 透视映射
-			v.worldPos /= v.z;
-			v.texCoord /= v.z;
-			v.normal /= v.z;
-			v.color /= v.z;
-
-			// 片段着色器
-			frameBuffer->drawPixel(x, y, shader->fragmentShader(v));
-			frameBuffer->setDepth(x, y, v.windowPos.z);
-		}
+		drawVertex(x, y, v, shader);
 	}
 }
 
@@ -248,8 +242,11 @@ void Scene::drawMesh(const Mesh* mesh, Shader* shader) {
 		v2.windowPos = viewPortMatrix * v2.windowPos;
 		v3.windowPos = viewPortMatrix * v3.windowPos;
 
-		if (mode == RenderMode::MESH) {
-			drawTriangle(v1, v2, v3, shader);
+		if (mode == RenderMode::MESH_SCANLINE) {
+			drawTriangleScanLine(v1, v2, v3, shader);
+		}
+		else if (mode == RenderMode::MESH_BOUNDARY) {
+			drawTriangleBoundary(v1, v2, v3, shader);
 		}
 		else if (mode == RenderMode::LINE) {
 			drawLine(v1, v2);

@@ -18,12 +18,12 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1024;
+const unsigned int SCR_HEIGHT = 1024;
 
 int fps = 0;
 
-Scene scene(SCR_WIDTH, SCR_HEIGHT);
+Scene scene(SCR_WIDTH, SCR_HEIGHT, RenderMode::MESH_SCANLINE);
 Camera camera(glm::vec3(-3.0f, 3.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 45.0f,  0.1f, 100.0f);
 
 void ShowFps(GLFWwindow* window) {
@@ -91,7 +91,7 @@ int main()
     std::thread t(ShowFps, window);
     t.detach();
 
-    float angle = 0.0f;
+    //float angle = 0.0f;
 
     // render loop
     while (!glfwWindowShouldClose(window))
@@ -101,8 +101,8 @@ int main()
         
         //obj.transform(glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(1.0, 1.0, 0.0)));
         scene.render();
-        Sleep(10);
-        angle += 1.0f;
+        //Sleep(10);
+        //angle += 1.0f;
         fps++;
 
         glfwSwapBuffers(window);
@@ -115,6 +115,7 @@ int main()
 
 void processInput(GLFWwindow* window)
 {
+    float speed = 0.05;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
@@ -130,22 +131,22 @@ void processInput(GLFWwindow* window)
         camera.rotatePitch(-1.0);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera.moveForward(0.1);
+        camera.moveForward(speed);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera.moveBackward(0.1);
+        camera.moveBackward(speed);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera.moveLeft(0.1);
+        camera.moveLeft(speed);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera.moveRight(0.1);
+        camera.moveRight(speed);
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        camera.moveUp(0.1);
+        camera.moveUp(speed);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-        camera.moveDown(0.1);
+        camera.moveDown(speed);
     }
 }
 

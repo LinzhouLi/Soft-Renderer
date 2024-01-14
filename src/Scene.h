@@ -17,7 +17,7 @@ class FrameBuffer;
 class Material;
 
 enum class RenderMode {
-	LINE, MESH
+	LINE, MESH_SCANLINE, MESH_BOUNDARY
 };
 
 class Scene {
@@ -42,7 +42,7 @@ public:
 	FrameBuffer* frameBuffer;
 	RenderMode mode;
 
-	Scene(const int& w, const int& h, RenderMode m = RenderMode::MESH);
+	Scene(const int& w, const int& h, RenderMode m = RenderMode::MESH_SCANLINE);
 	~Scene();
 
 	void init();
@@ -61,11 +61,11 @@ public:
 	void drawMesh(const Mesh* mesh, Shader* shader);
 	void drawObject(const Object* obj);
 
-	void writeVertex(Vertex& v, Shader* shader);
+	void drawVertex(int x, int y, Vertex& v, Shader* shader);
 	void drawLine(const Vertex& v1, const Vertex& v2);
-	void drawTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader);
+	void drawTriangleScanLine(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader);
 	void scanLineFilling(const Vertex& left, const Vertex& right, Shader* shader);
-	void drawTriangleByBarycentric(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader);
+	void drawTriangleBoundary(const Vertex& v1, const Vertex& v2, const Vertex& v3, Shader* shader);
 };
 
 #endif // !__SCENE_H__

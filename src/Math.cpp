@@ -58,6 +58,7 @@ Vertex Lerp(const Vertex& v1, const Vertex& v2, const Vertex& v3, const glm::vec
 	result.color = Lerp(v1.color, v2.color, v3.color, factor);
 	result.texCoord = Lerp(v1.texCoord, v2.texCoord, v3.texCoord, factor);
 	result.normal = Lerp(v1.normal, v2.normal, v3.normal, factor);
+	result.z = Lerp(v1.z, v2.z, v3.z, factor);
 	return result;
 }
 
