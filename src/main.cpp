@@ -29,7 +29,7 @@ Camera camera(glm::vec3(-3.0f, 3.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::v
 void ShowFps(GLFWwindow* window) {
     while (1) {
         Sleep(1000);
-        std::string text = "MyRender fps:" + std::to_string(fps);
+        std::string text = "MyRenderer fps:" + std::to_string(fps);
         glfwSetWindowTitle(window, text.c_str());
         fps = 0;
     }
@@ -41,7 +41,7 @@ int main()
     
     glfwInit();
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "MyShader", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "MyRenderer", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
